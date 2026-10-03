@@ -36,7 +36,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 2 | [#2](https://github.com/paramcodes/ben/issues/2) | Complete | [PR #48](https://github.com/paramcodes/ben/pull/48) — merged 2026-10-03 |
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Complete | [PR #49](https://github.com/paramcodes/ben/pull/49) — merged 2026-10-03 |
 | 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Complete | [PR #50](https://github.com/paramcodes/ben/pull/50) — merged 2026-10-03 |
-| 5 | [#5](https://github.com/paramcodes/ben/issues/5) | Open | |
+| 5 | [#5](https://github.com/paramcodes/ben/issues/5) | In progress | [PR #51](https://github.com/paramcodes/ben/pull/51) — open |
 | 6 | [#6](https://github.com/paramcodes/ben/issues/6) | Open | |
 | 7 | [#7](https://github.com/paramcodes/ben/issues/7) | Open | |
 | 8 | [#8](https://github.com/paramcodes/ben/issues/8) | Open | |
@@ -87,3 +87,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #48](https://github.com/paramcodes/ben/pull/48) | 2 | Merged 2026-10-03 | chore: pin initial Rust dependencies |
 | [PR #49](https://github.com/paramcodes/ben/pull/49) | 3 | Merged 2026-10-03 | feat: add structured diagnostics |
 | [PR #50](https://github.com/paramcodes/ben/pull/50) | 4 | Merged 2026-10-03 | feat: manage terminal lifecycle safely |
+| [PR #51](https://github.com/paramcodes/ben/pull/51) | 5 | Open | feat: model application state and events |
