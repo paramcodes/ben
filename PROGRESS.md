@@ -16,7 +16,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 
 | Milestone | Tickets | Status |
 |---|---:|---|
-| 0 — Rust project and terminal lifecycle | 1–4 | In progress |
+| 0 — Rust project and terminal lifecycle | 1–4 | Complete |
 | 1 — TUI shell and state | 5–8 | Not started |
 | 2 — Configuration and provider boundary | 9–13 | Not started |
 | 3 — Streaming and agent loop | 14–20 | Not started |
@@ -35,7 +35,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 1 | [#1](https://github.com/paramcodes/ben/issues/1) | Complete | [PR #47](https://github.com/paramcodes/ben/pull/47) — merged 2026-10-03 |
 | 2 | [#2](https://github.com/paramcodes/ben/issues/2) | Complete | [PR #48](https://github.com/paramcodes/ben/pull/48) — merged 2026-10-03 |
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Complete | [PR #49](https://github.com/paramcodes/ben/pull/49) — merged 2026-10-03 |
-| 4 | [#4](https://github.com/paramcodes/ben/issues/4) | In progress | [PR #50](https://github.com/paramcodes/ben/pull/50) — open |
+| 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Complete | [PR #50](https://github.com/paramcodes/ben/pull/50) — merged 2026-10-03 |
 | 5 | [#5](https://github.com/paramcodes/ben/issues/5) | Open | |
 | 6 | [#6](https://github.com/paramcodes/ben/issues/6) | Open | |
 | 7 | [#7](https://github.com/paramcodes/ben/issues/7) | Open | |
@@ -86,4 +86,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #47](https://github.com/paramcodes/ben/pull/47) | 1 | Merged 2026-10-03 | chore: scaffold terminal agent |
 | [PR #48](https://github.com/paramcodes/ben/pull/48) | 2 | Merged 2026-10-03 | chore: pin initial Rust dependencies |
 | [PR #49](https://github.com/paramcodes/ben/pull/49) | 3 | Merged 2026-10-03 | feat: add structured diagnostics |
-| [PR #50](https://github.com/paramcodes/ben/pull/50) | 4 | Open | feat: manage terminal lifecycle safely |
+| [PR #50](https://github.com/paramcodes/ben/pull/50) | 4 | Merged 2026-10-03 | feat: manage terminal lifecycle safely |
