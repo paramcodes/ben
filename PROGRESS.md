@@ -52,7 +52,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 18 | [#18](https://github.com/paramcodes/ben/issues/18) | Complete | [PR #64](https://github.com/paramcodes/ben/pull/64) — merged 2026-10-03 |
 | 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Complete | [PR #65](https://github.com/paramcodes/ben/pull/65) — merged 2026-10-03 |
 | 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Complete | [PR #66](https://github.com/paramcodes/ben/pull/66) — merged 2026-10-03 |
-| 21 | [#21](https://github.com/paramcodes/ben/issues/21) | In progress | [PR #67](https://github.com/paramcodes/ben/pull/67) |
+| 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Complete | [PR #67](https://github.com/paramcodes/ben/pull/67) — merged 2026-10-03 |
 | 22 | [#22](https://github.com/paramcodes/ben/issues/22) | Open | |
 | 23 | [#23](https://github.com/paramcodes/ben/issues/23) | Open | |
 | 24 | [#24](https://github.com/paramcodes/ben/issues/24) | Open | |
@@ -103,3 +103,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #64](https://github.com/paramcodes/ben/pull/64) | 18 | Merged 2026-10-03 | Task 18: Implement the agent turn state machine |
 | [PR #65](https://github.com/paramcodes/ben/pull/65) | 19 | Merged 2026-10-03 | Task 19: Add cancellation and busy-state behavior |
 | [PR #66](https://github.com/paramcodes/ben/pull/66) | 20 | Merged 2026-10-03 | Task 20: Define retry and duplicate-action rules |
+| [PR #67](https://github.com/paramcodes/ben/pull/67) | 21 | Merged 2026-10-03 | Task 21: Confine paths to workspace root |
