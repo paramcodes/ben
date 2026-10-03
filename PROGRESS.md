@@ -16,7 +16,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 
 | Milestone | Tickets | Status |
 |---|---:|---|
-| 0 — Rust project and terminal lifecycle | 1–4 | Not started |
+| 0 — Rust project and terminal lifecycle | 1–4 | In progress |
 | 1 — TUI shell and state | 5–8 | Not started |
 | 2 — Configuration and provider boundary | 9–13 | Not started |
 | 3 — Streaming and agent loop | 14–20 | Not started |
@@ -32,7 +32,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 
 | Task | Ticket | Status | Evidence / note |
 |---:|---|---|---|
-| 1 | [#1](https://github.com/paramcodes/ben/issues/1) | In progress | [PR #47](https://github.com/paramcodes/ben/pull/47) |
+| 1 | [#1](https://github.com/paramcodes/ben/issues/1) | Complete | [PR #47](https://github.com/paramcodes/ben/pull/47) — merged 2026-10-03 |
 | 2 | [#2](https://github.com/paramcodes/ben/issues/2) | Open | |
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Open | |
 | 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Open | |
@@ -83,4 +83,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 
 | PR | Ticket | Merged | Summary |
 |---|---:|---|---|
-| — | — | — | No implementation PRs merged yet. |
+| [PR #47](https://github.com/paramcodes/ben/pull/47) | 1 | Merged 2026-10-03 | chore: scaffold terminal agent |
