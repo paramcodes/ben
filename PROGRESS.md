@@ -50,7 +50,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 16 | [#16](https://github.com/paramcodes/ben/issues/16) | Complete | [PR #62](https://github.com/paramcodes/ben/pull/62) — merged 2026-10-03 |
 | 17 | [#17](https://github.com/paramcodes/ben/issues/17) | Complete | [PR #63](https://github.com/paramcodes/ben/pull/63) — merged 2026-10-03 |
 | 18 | [#18](https://github.com/paramcodes/ben/issues/18) | Complete | [PR #64](https://github.com/paramcodes/ben/pull/64) — merged 2026-10-03 |
-| 19 | [#19](https://github.com/paramcodes/ben/issues/19) | In progress | [PR #65](https://github.com/paramcodes/ben/pull/65) |
+| 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Complete | [PR #65](https://github.com/paramcodes/ben/pull/65) — merged 2026-10-03 |
 | 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Open | |
 | 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Open | |
 | 22 | [#22](https://github.com/paramcodes/ben/issues/22) | Open | |
@@ -101,3 +101,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #62](https://github.com/paramcodes/ben/pull/62) | 16 | Merged 2026-10-03 | Task 16: Stream provider events into app state |
 | [PR #63](https://github.com/paramcodes/ben/pull/63) | 17 | Merged 2026-10-03 | Task 17: Add deterministic fake provider |
 | [PR #64](https://github.com/paramcodes/ben/pull/64) | 18 | Merged 2026-10-03 | Task 18: Implement the agent turn state machine |
+| [PR #65](https://github.com/paramcodes/ben/pull/65) | 19 | Merged 2026-10-03 | Task 19: Add cancellation and busy-state behavior |
