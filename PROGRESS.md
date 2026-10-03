@@ -18,7 +18,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 |---|---:|---|
 | 0 — Rust project and terminal lifecycle | 1–4 | Complete |
 | 1 — TUI shell and state | 5–8 | Complete |
-| 2 — Configuration and provider boundary | 9–13 | In progress |
+| 2 — Configuration and provider boundary | 9–13 | Complete |
 | 3 — Streaming and agent loop | 14–20 | Not started |
 | 4 — Workspace context and read-only tools | 21–26 | Not started |
 | 5 — Approval and side-effecting tools | 27–32 | Not started |
@@ -44,7 +44,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 10 | [#10](https://github.com/paramcodes/ben/issues/10) | Complete | [PR #56](https://github.com/paramcodes/ben/pull/56) — merged 2026-10-03 |
 | 11 | [#11](https://github.com/paramcodes/ben/issues/11) | Complete | [PR #57](https://github.com/paramcodes/ben/pull/57) — merged 2026-10-03 |
 | 12 | [#12](https://github.com/paramcodes/ben/issues/12) | Complete | [PR #58](https://github.com/paramcodes/ben/pull/58) — merged 2026-10-03 |
-| 13 | [#13](https://github.com/paramcodes/ben/issues/13) | In progress | [PR #59](https://github.com/paramcodes/ben/pull/59) — open |
+| 13 | [#13](https://github.com/paramcodes/ben/issues/13) | Complete | [PR #59](https://github.com/paramcodes/ben/pull/59) — merged 2026-10-03 |
 | 14 | [#14](https://github.com/paramcodes/ben/issues/14) | Open | |
 | 15 | [#15](https://github.com/paramcodes/ben/issues/15) | Open | |
 | 16 | [#16](https://github.com/paramcodes/ben/issues/16) | Open | |
@@ -95,4 +95,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #56](https://github.com/paramcodes/ben/pull/56) | 10 | Merged 2026-10-03 | feat: load validated configuration securely |
 | [PR #57](https://github.com/paramcodes/ben/pull/57) | 11 | Merged 2026-10-03 | feat: define provider-neutral model interface |
 | [PR #58](https://github.com/paramcodes/ben/pull/58) | 12 | Merged 2026-10-03 | feat: map agent requests to Responses API |
-| [PR #59](https://github.com/paramcodes/ben/pull/59) | 13 | Open | feat: send provider requests over HTTPS |
+| [PR #59](https://github.com/paramcodes/ben/pull/59) | 13 | Merged 2026-10-03 | feat: send provider requests over HTTPS |
