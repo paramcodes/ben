@@ -49,7 +49,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 15 | [#15](https://github.com/paramcodes/ben/issues/15) | Complete | [PR #61](https://github.com/paramcodes/ben/pull/61) — merged 2026-10-03 |
 | 16 | [#16](https://github.com/paramcodes/ben/issues/16) | Complete | [PR #62](https://github.com/paramcodes/ben/pull/62) — merged 2026-10-03 |
 | 17 | [#17](https://github.com/paramcodes/ben/issues/17) | Complete | [PR #63](https://github.com/paramcodes/ben/pull/63) — merged 2026-10-03 |
-| 18 | [#18](https://github.com/paramcodes/ben/issues/18) | Open | |
+| 18 | [#18](https://github.com/paramcodes/ben/issues/18) | In progress | [PR #64](https://github.com/paramcodes/ben/pull/64) |
 | 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Open | |
 | 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Open | |
 | 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Open | |
