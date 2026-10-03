@@ -27,6 +27,7 @@ fn version_flag_prints_package_name_and_version() {
 fn defaults_to_the_current_workspace() {
     let workspace = tempfile::tempdir().expect("temporary workspace should be created");
     let output = Command::new(env!("CARGO_BIN_EXE_ben"))
+        .env("OPENAI_API_KEY", "test-api-key")
         .current_dir(workspace.path())
         .output()
         .expect("agent should start with default options");
@@ -38,6 +39,7 @@ fn defaults_to_the_current_workspace() {
 fn accepts_an_explicit_workspace() {
     let workspace = tempfile::tempdir().expect("temporary workspace should be created");
     let output = Command::new(env!("CARGO_BIN_EXE_ben"))
+        .env("OPENAI_API_KEY", "test-api-key")
         .arg(workspace.path())
         .output()
         .expect("agent should accept an explicit workspace");
@@ -77,5 +79,21 @@ fn rejects_an_empty_model_argument() {
     assert!(
         stderr.contains("invalid value"),
         "expected a parse error: {stderr}"
+    );
+}
+
+#[test]
+fn missing_api_key_reports_setup_instructions() {
+    let output = Command::new(env!("CARGO_BIN_EXE_ben"))
+        .env_remove("OPENAI_API_KEY")
+        .env_remove("BEN_TEST_STARTUP_ERROR")
+        .output()
+        .expect("agent should report missing configuration");
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8(output.stderr).expect("error output should be UTF-8");
+    assert!(
+        stderr.contains("OPENAI_API_KEY is required"),
+        "expected credential setup instructions: {stderr}"
     );
 }
