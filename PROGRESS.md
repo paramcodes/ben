@@ -17,7 +17,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | Milestone | Tickets | Status |
 |---|---:|---|
 | 0 — Rust project and terminal lifecycle | 1–4 | Complete |
-| 1 — TUI shell and state | 5–8 | Not started |
+| 1 — TUI shell and state | 5–8 | In progress |
 | 2 — Configuration and provider boundary | 9–13 | Not started |
 | 3 — Streaming and agent loop | 14–20 | Not started |
 | 4 — Workspace context and read-only tools | 21–26 | Not started |
@@ -37,7 +37,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Complete | [PR #49](https://github.com/paramcodes/ben/pull/49) — merged 2026-10-03 |
 | 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Complete | [PR #50](https://github.com/paramcodes/ben/pull/50) — merged 2026-10-03 |
 | 5 | [#5](https://github.com/paramcodes/ben/issues/5) | Complete | [PR #51](https://github.com/paramcodes/ben/pull/51) — merged 2026-10-03 |
-| 6 | [#6](https://github.com/paramcodes/ben/issues/6) | Open | |
+| 6 | [#6](https://github.com/paramcodes/ben/issues/6) | In progress | [PR #52](https://github.com/paramcodes/ben/pull/52) — open |
 | 7 | [#7](https://github.com/paramcodes/ben/issues/7) | Open | |
 | 8 | [#8](https://github.com/paramcodes/ben/issues/8) | Open | |
 | 9 | [#9](https://github.com/paramcodes/ben/issues/9) | Open | |
@@ -88,3 +88,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #49](https://github.com/paramcodes/ben/pull/49) | 3 | Merged 2026-10-03 | feat: add structured diagnostics |
 | [PR #50](https://github.com/paramcodes/ben/pull/50) | 4 | Merged 2026-10-03 | feat: manage terminal lifecycle safely |
 | [PR #51](https://github.com/paramcodes/ben/pull/51) | 5 | Merged 2026-10-03 | feat: model application state and events |
+| [PR #52](https://github.com/paramcodes/ben/pull/52) | 6 | Open | feat: render responsive TUI shell |
