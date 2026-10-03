@@ -20,7 +20,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 1 — TUI shell and state | 5–8 | Complete |
 | 2 — Configuration and provider boundary | 9–13 | Complete |
 | 3 — Streaming and agent loop | 14–20 | Complete |
-| 4 — Workspace context and read-only tools | 21–26 | Not started |
+| 4 — Workspace context and read-only tools | 21–26 | In progress |
 | 5 — Approval and side-effecting tools | 27–32 | Not started |
 | 6 — Sessions and robust recovery | 33–36 | Not started |
 | 7 — Product usability and release | 37–40 | Not started |
@@ -53,7 +53,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Complete | [PR #65](https://github.com/paramcodes/ben/pull/65) — merged 2026-10-03 |
 | 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Complete | [PR #66](https://github.com/paramcodes/ben/pull/66) — merged 2026-10-03 |
 | 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Complete | [PR #67](https://github.com/paramcodes/ben/pull/67) — merged 2026-10-03 |
-| 22 | [#22](https://github.com/paramcodes/ben/issues/22) | In progress | [PR #68](https://github.com/paramcodes/ben/pull/68) |
+| 22 | [#22](https://github.com/paramcodes/ben/issues/22) | Complete | [PR #68](https://github.com/paramcodes/ben/pull/68) — merged 2026-10-03 |
 | 23 | [#23](https://github.com/paramcodes/ben/issues/23) | Open | |
 | 24 | [#24](https://github.com/paramcodes/ben/issues/24) | Open | |
 | 25 | [#25](https://github.com/paramcodes/ben/issues/25) | Open | |
@@ -104,3 +104,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #65](https://github.com/paramcodes/ben/pull/65) | 19 | Merged 2026-10-03 | Task 19: Add cancellation and busy-state behavior |
 | [PR #66](https://github.com/paramcodes/ben/pull/66) | 20 | Merged 2026-10-03 | Task 20: Define retry and duplicate-action rules |
 | [PR #67](https://github.com/paramcodes/ben/pull/67) | 21 | Merged 2026-10-03 | Task 21: Confine paths to workspace root |
+| [PR #68](https://github.com/paramcodes/ben/pull/68) | 22 | Merged 2026-10-03 | Task 22: Define typed tool registry |
