@@ -1,6 +1,8 @@
+pub mod agent;
 pub mod app;
 mod cli;
 pub mod config;
+pub mod providers;
 mod telemetry;
 pub mod ui;
 
