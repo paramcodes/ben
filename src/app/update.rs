@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use super::event::AppEvent;
+use crate::providers::types::ProviderEvent;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Screen {
@@ -28,6 +29,11 @@ pub enum Status {
     Ready,
     Working,
     Tool(String),
+    Connecting,
+    Streaming,
+    Completed,
+    Failed,
+    Cancelled,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -57,6 +63,31 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
             text,
         }),
         AppEvent::ToolStatus(status) => state.status = Status::Tool(status),
+        AppEvent::ProviderStarted => state.status = Status::Connecting,
+        AppEvent::ProviderEvent(event) => match event {
+            ProviderEvent::TextDelta(text) => {
+                state.status = Status::Streaming;
+                if let Some(entry) = state
+                    .transcript
+                    .last_mut()
+                    .filter(|entry| entry.speaker == Speaker::Assistant)
+                {
+                    entry.text.push_str(&text);
+                } else {
+                    state.transcript.push(TranscriptEntry {
+                        speaker: Speaker::Assistant,
+                        text,
+                    });
+                }
+            }
+            ProviderEvent::Completed(_) => state.status = Status::Completed,
+            ProviderEvent::ToolCallStarted { .. }
+            | ProviderEvent::ToolCallArgumentsDelta { .. }
+            | ProviderEvent::ToolCallCompleted(_)
+            | ProviderEvent::Usage(_) => state.status = Status::Streaming,
+        },
+        AppEvent::ProviderFailed(_) => state.status = Status::Failed,
+        AppEvent::ProviderCancelled => state.status = Status::Cancelled,
         AppEvent::ScrollUp => state.transcript_scroll = state.transcript_scroll.saturating_sub(1),
         AppEvent::ScrollDown => state.transcript_scroll = state.transcript_scroll.saturating_add(1),
         AppEvent::Quit => state.should_exit = true,
@@ -127,9 +158,12 @@ fn cursor_byte_index(input: &str, cursor: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::update;
-    use crate::app::{
-        event::AppEvent,
-        update::{AppState, Speaker, Status, TranscriptEntry},
+    use crate::{
+        app::{
+            event::AppEvent,
+            update::{AppState, Speaker, Status, TranscriptEntry},
+        },
+        providers::types::{ProviderError, ProviderEvent},
     };
     use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -275,5 +309,59 @@ mod tests {
             AppEvent::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::NONE)),
         );
         assert_eq!(state.input_cursor, 1);
+    }
+
+    #[test]
+    fn provider_text_deltas_append_in_order_to_one_assistant_entry() {
+        let state = update(AppState::default(), AppEvent::ProviderStarted);
+        assert_eq!(state.status, Status::Connecting);
+
+        let state = update(
+            state,
+            AppEvent::ProviderEvent(ProviderEvent::TextDelta("hello".into())),
+        );
+        assert_eq!(state.status, Status::Streaming);
+        let state = update(
+            state,
+            AppEvent::ProviderEvent(ProviderEvent::TextDelta(" world".into())),
+        );
+        let state = update(
+            state,
+            AppEvent::ProviderEvent(ProviderEvent::Completed(
+                crate::providers::types::CompletionReason::EndTurn,
+            )),
+        );
+
+        assert_eq!(state.status, Status::Completed);
+        assert_eq!(
+            state.transcript,
+            [TranscriptEntry {
+                speaker: Speaker::Assistant,
+                text: "hello world".into()
+            }]
+        );
+    }
+
+    #[test]
+    fn provider_error_sets_failed_status_and_retains_prior_output() {
+        let state = AppState {
+            transcript: vec![TranscriptEntry {
+                speaker: Speaker::Assistant,
+                text: "partial answer".into(),
+            }],
+            ..AppState::default()
+        };
+
+        let state = update(state, AppEvent::ProviderFailed(ProviderError::Transport));
+
+        assert_eq!(state.status, Status::Failed);
+        assert_eq!(state.transcript[0].text, "partial answer");
+    }
+
+    #[test]
+    fn provider_cancellation_sets_cancelled_status() {
+        let state = update(AppState::default(), AppEvent::ProviderCancelled);
+
+        assert_eq!(state.status, Status::Cancelled);
     }
 }
