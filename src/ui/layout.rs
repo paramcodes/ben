@@ -3,12 +3,12 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Block, Borders, Paragraph},
 };
 
-use crate::app::update::{AppState, Speaker};
+use crate::app::update::AppState;
 
-use super::status;
+use super::{conversation, status};
 
 pub fn render(frame: &mut Frame<'_>, state: &AppState) {
     let area = frame.area();
@@ -38,28 +38,8 @@ pub fn render(frame: &mut Frame<'_>, state: &AppState) {
     );
     frame.render_widget(header, chunks[0]);
 
-    let transcript = state
-        .transcript
-        .iter()
-        .map(|entry| {
-            let speaker = match entry.speaker {
-                Speaker::User => "You",
-                Speaker::Assistant => "Agent",
-                Speaker::Tool => "Tool",
-            };
-            Line::from(format!("{speaker}: {}", entry.text))
-        })
-        .collect::<Vec<_>>();
-    let transcript = Paragraph::new(transcript)
-        .block(Block::default().borders(Borders::ALL).title("Conversation"))
-        .wrap(Wrap { trim: false })
-        .scroll((state.transcript_scroll, 0));
-    frame.render_widget(transcript, chunks[1]);
-
-    let prompt = Paragraph::new(state.input.as_str())
-        .block(Block::default().borders(Borders::ALL).title("Prompt"))
-        .wrap(Wrap { trim: false });
-    frame.render_widget(prompt, chunks[2]);
+    conversation::render_transcript(frame, chunks[1], state);
+    conversation::render_prompt(frame, chunks[2], state);
 
     let help = if compact {
         "Enter send · Ctrl+C quit"
@@ -75,12 +55,10 @@ mod tests {
     use crate::app::update::AppState;
     use ratatui::{Terminal, backend::TestBackend};
 
-    fn render_text(width: u16, height: u16) -> String {
+    fn render_state(width: u16, height: u16, state: &AppState) -> String {
         let backend = TestBackend::new(width, height);
         let mut terminal = Terminal::new(backend).unwrap();
-        terminal
-            .draw(|frame| render(frame, &AppState::default()))
-            .unwrap();
+        terminal.draw(|frame| render(frame, state)).unwrap();
         terminal
             .backend()
             .buffer()
@@ -92,7 +70,7 @@ mod tests {
 
     #[test]
     fn renders_required_areas_at_standard_size() {
-        let rendered = render_text(80, 24);
+        let rendered = render_state(80, 24, &AppState::default());
 
         assert!(rendered.contains("BEN"));
         assert!(rendered.contains("Ready"));
@@ -102,7 +80,7 @@ mod tests {
 
     #[test]
     fn renders_compact_layout_in_narrow_terminal() {
-        let rendered = render_text(40, 12);
+        let rendered = render_state(40, 12, &AppState::default());
 
         assert!(rendered.contains("BEN"));
         assert!(rendered.contains("Ready"));
@@ -110,10 +88,43 @@ mod tests {
 
     #[test]
     fn renders_wide_terminal_without_panicking() {
-        let rendered = render_text(160, 50);
+        let rendered = render_state(160, 50, &AppState::default());
 
         assert!(rendered.contains("BEN"));
         assert!(rendered.contains("Prompt"));
         assert!(rendered.contains("Ctrl+C"));
+    }
+
+    #[test]
+    fn renders_multiline_messages_on_separate_lines() {
+        use crate::app::update::{Speaker, TranscriptEntry};
+
+        let state = AppState {
+            transcript: vec![TranscriptEntry {
+                speaker: Speaker::Assistant,
+                text: "first line\nsecond line".into(),
+            }],
+            ..AppState::default()
+        };
+
+        let rendered = render_state(80, 24, &state);
+
+        assert!(rendered.contains("Agent: first line"));
+        assert!(rendered.contains("second line"));
+    }
+
+    #[test]
+    fn shows_prompt_cursor_at_the_input_position() {
+        let state = AppState {
+            input: "abc".into(),
+            input_cursor: 2,
+            ..AppState::default()
+        };
+        let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+
+        terminal.draw(|frame| render(frame, &state)).unwrap();
+
+        assert!(terminal.backend().cursor_visible());
+        assert_eq!(terminal.backend().cursor_position().x, 3);
     }
 }

@@ -39,6 +39,7 @@ pub struct PendingApproval {
 pub struct AppState {
     pub screen: Screen,
     pub input: String,
+    pub input_cursor: usize,
     pub transcript: Vec<TranscriptEntry>,
     pub status: Status,
     pub pending_approval: Option<PendingApproval>,
@@ -64,15 +65,38 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
 }
 
 fn update_key(state: &mut AppState, key: KeyEvent) {
+    state.input_cursor = state.input_cursor.min(state.input.chars().count());
     match key.code {
         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
             state.should_exit = true;
         }
         KeyCode::Char(character) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-            state.input.push(character);
+            let byte_index = cursor_byte_index(&state.input, state.input_cursor);
+            state.input.insert(byte_index, character);
+            state.input_cursor = state.input_cursor.saturating_add(1);
         }
         KeyCode::Backspace => {
-            state.input.pop();
+            if state.input_cursor > 0 {
+                let start = cursor_byte_index(&state.input, state.input_cursor - 1);
+                let end = cursor_byte_index(&state.input, state.input_cursor);
+                state.input.replace_range(start..end, "");
+                state.input_cursor -= 1;
+            }
+        }
+        KeyCode::Left => {
+            state.input_cursor = state.input_cursor.saturating_sub(1);
+        }
+        KeyCode::Right => {
+            state.input_cursor = state
+                .input_cursor
+                .saturating_add(1)
+                .min(state.input.chars().count());
+        }
+        KeyCode::Home => {
+            state.input_cursor = 0;
+        }
+        KeyCode::End => {
+            state.input_cursor = state.input.chars().count();
         }
         KeyCode::Enter => submit(state),
         _ => {}
@@ -85,11 +109,19 @@ fn submit(state: &mut AppState) {
     }
 
     let text = std::mem::take(&mut state.input);
+    state.input_cursor = 0;
     state.transcript.push(TranscriptEntry {
         speaker: Speaker::User,
         text,
     });
     state.status = Status::Working;
+}
+
+fn cursor_byte_index(input: &str, cursor: usize) -> usize {
+    input
+        .char_indices()
+        .nth(cursor)
+        .map_or(input.len(), |(byte_index, _)| byte_index)
 }
 
 #[cfg(test)]
@@ -166,6 +198,7 @@ mod tests {
         );
 
         assert_eq!(state.input, "");
+        assert_eq!(state.input_cursor, 0);
         assert_eq!(
             state.transcript,
             [TranscriptEntry {
@@ -187,5 +220,60 @@ mod tests {
 
         let state = update(state, AppEvent::ScrollDown);
         assert_eq!(state.transcript_scroll, 2);
+    }
+
+    #[test]
+    fn inserts_text_at_the_cursor_position() {
+        let state = AppState {
+            input: "ab".into(),
+            input_cursor: 1,
+            ..AppState::default()
+        };
+
+        let state = update(
+            state,
+            AppEvent::Key(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE)),
+        );
+
+        assert_eq!(state.input, "axb");
+        assert_eq!(state.input_cursor, 2);
+    }
+
+    #[test]
+    fn backspace_removes_character_before_cursor() {
+        let state = AppState {
+            input: "axb".into(),
+            input_cursor: 2,
+            ..AppState::default()
+        };
+
+        let state = update(
+            state,
+            AppEvent::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE)),
+        );
+
+        assert_eq!(state.input, "ab");
+        assert_eq!(state.input_cursor, 1);
+    }
+
+    #[test]
+    fn left_and_right_keys_move_cursor_within_input() {
+        let state = AppState {
+            input: "abc".into(),
+            input_cursor: 1,
+            ..AppState::default()
+        };
+
+        let state = update(
+            state,
+            AppEvent::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::NONE)),
+        );
+        assert_eq!(state.input_cursor, 2);
+
+        let state = update(
+            state,
+            AppEvent::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::NONE)),
+        );
+        assert_eq!(state.input_cursor, 1);
     }
 }
