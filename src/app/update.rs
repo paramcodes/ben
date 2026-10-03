@@ -42,6 +42,7 @@ pub struct AppState {
     pub transcript: Vec<TranscriptEntry>,
     pub status: Status,
     pub pending_approval: Option<PendingApproval>,
+    pub transcript_scroll: u16,
     pub should_exit: bool,
 }
 
@@ -55,6 +56,8 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
             text,
         }),
         AppEvent::ToolStatus(status) => state.status = Status::Tool(status),
+        AppEvent::ScrollUp => state.transcript_scroll = state.transcript_scroll.saturating_sub(1),
+        AppEvent::ScrollDown => state.transcript_scroll = state.transcript_scroll.saturating_add(1),
         AppEvent::Quit => state.should_exit = true,
     }
     state
@@ -170,5 +173,19 @@ mod tests {
                 text: "hello".into()
             }]
         );
+    }
+
+    #[test]
+    fn scroll_keys_move_the_transcript_viewport() {
+        let state = AppState {
+            transcript_scroll: 2,
+            ..AppState::default()
+        };
+
+        let state = update(state, AppEvent::ScrollUp);
+        assert_eq!(state.transcript_scroll, 1);
+
+        let state = update(state, AppEvent::ScrollDown);
+        assert_eq!(state.transcript_scroll, 2);
     }
 }

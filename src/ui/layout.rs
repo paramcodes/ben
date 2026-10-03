@@ -52,7 +52,8 @@ pub fn render(frame: &mut Frame<'_>, state: &AppState) {
         .collect::<Vec<_>>();
     let transcript = Paragraph::new(transcript)
         .block(Block::default().borders(Borders::ALL).title("Conversation"))
-        .wrap(Wrap { trim: false });
+        .wrap(Wrap { trim: false })
+        .scroll((state.transcript_scroll, 0));
     frame.render_widget(transcript, chunks[1]);
 
     let prompt = Paragraph::new(state.input.as_str())

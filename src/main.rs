@@ -62,7 +62,7 @@ fn run() -> Result<(), StartupError> {
     if std::env::args_os().nth(1).as_deref() == Some(OsStr::new("--version")) {
         println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
     } else if std::io::stdout().is_terminal() {
-        app::terminal::with_terminal(app::terminal::CrosstermControl, || Ok(()))?;
+        app::terminal::with_terminal(app::terminal::CrosstermControl, app::run)?;
     }
 
     Ok(())
