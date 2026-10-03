@@ -1,0 +1,8 @@
+[package]
+name = "ben"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "ben"
+path = "src/main.rs"

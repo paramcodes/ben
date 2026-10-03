@@ -9,4 +9,4 @@ if [[ ! -f Cargo.toml ]]; then
 fi
 
 cargo fmt --all -- --check
-cargo test --offline --locked --lib "$@"
+cargo test --offline --locked --all-targets "$@"
