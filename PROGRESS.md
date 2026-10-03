@@ -49,7 +49,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 15 | [#15](https://github.com/paramcodes/ben/issues/15) | Complete | [PR #61](https://github.com/paramcodes/ben/pull/61) — merged 2026-10-03 |
 | 16 | [#16](https://github.com/paramcodes/ben/issues/16) | Complete | [PR #62](https://github.com/paramcodes/ben/pull/62) — merged 2026-10-03 |
 | 17 | [#17](https://github.com/paramcodes/ben/issues/17) | Complete | [PR #63](https://github.com/paramcodes/ben/pull/63) — merged 2026-10-03 |
-| 18 | [#18](https://github.com/paramcodes/ben/issues/18) | In progress | [PR #64](https://github.com/paramcodes/ben/pull/64) |
+| 18 | [#18](https://github.com/paramcodes/ben/issues/18) | Complete | [PR #64](https://github.com/paramcodes/ben/pull/64) — merged 2026-10-03 |
 | 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Open | |
 | 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Open | |
 | 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Open | |
@@ -100,3 +100,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #61](https://github.com/paramcodes/ben/pull/61) | 15 | Merged 2026-10-03 | Task 15: Map Responses SSE events |
 | [PR #62](https://github.com/paramcodes/ben/pull/62) | 16 | Merged 2026-10-03 | Task 16: Stream provider events into app state |
 | [PR #63](https://github.com/paramcodes/ben/pull/63) | 17 | Merged 2026-10-03 | Task 17: Add deterministic fake provider |
+| [PR #64](https://github.com/paramcodes/ben/pull/64) | 18 | Merged 2026-10-03 | Task 18: Implement the agent turn state machine |
