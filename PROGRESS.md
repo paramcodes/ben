@@ -45,7 +45,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 11 | [#11](https://github.com/paramcodes/ben/issues/11) | Complete | [PR #57](https://github.com/paramcodes/ben/pull/57) — merged 2026-10-03 |
 | 12 | [#12](https://github.com/paramcodes/ben/issues/12) | Complete | [PR #58](https://github.com/paramcodes/ben/pull/58) — merged 2026-10-03 |
 | 13 | [#13](https://github.com/paramcodes/ben/issues/13) | Complete | [PR #59](https://github.com/paramcodes/ben/pull/59) — merged 2026-10-03 |
-| 14 | [#14](https://github.com/paramcodes/ben/issues/14) | In progress | [PR #60](https://github.com/paramcodes/ben/pull/60) — open |
+| 14 | [#14](https://github.com/paramcodes/ben/issues/14) | Complete | [PR #60](https://github.com/paramcodes/ben/pull/60) — merged 2026-10-03 |
 | 15 | [#15](https://github.com/paramcodes/ben/issues/15) | Open | |
 | 16 | [#16](https://github.com/paramcodes/ben/issues/16) | Open | |
 | 17 | [#17](https://github.com/paramcodes/ben/issues/17) | Open | |
@@ -96,4 +96,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #57](https://github.com/paramcodes/ben/pull/57) | 11 | Merged 2026-10-03 | feat: define provider-neutral model interface |
 | [PR #58](https://github.com/paramcodes/ben/pull/58) | 12 | Merged 2026-10-03 | feat: map agent requests to Responses API |
 | [PR #59](https://github.com/paramcodes/ben/pull/59) | 13 | Merged 2026-10-03 | feat: send provider requests over HTTPS |
-| [PR #60](https://github.com/paramcodes/ben/pull/60) | 14 | Open | feat: decode streamed server events |
+| [PR #60](https://github.com/paramcodes/ben/pull/60) | 14 | Merged 2026-10-03 | feat: decode streamed server events |
