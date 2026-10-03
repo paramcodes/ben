@@ -7,6 +7,7 @@ use tokio_util::sync::CancellationToken;
 use crate::{
     agent::{limits::AgentLimits, message::Message},
     app::event::AppEvent,
+    providers::retry::{RetryCheckpoint, RetryPolicy, RetryingProvider},
     providers::types::{
         CompletionReason, Provider, ProviderError, ProviderEvent, ProviderRequest,
         ToolSpecification,
@@ -27,12 +28,13 @@ pub enum StopReason {
 }
 
 pub struct Agent {
-    provider: Arc<dyn Provider>,
+    provider: RetryingProvider,
     model: String,
     tools: Vec<ToolSpecification>,
     limits: AgentLimits,
     history: Vec<Message>,
     turns_started: usize,
+    side_effect_checkpoint: bool,
 }
 
 impl Agent {
@@ -43,17 +45,23 @@ impl Agent {
         limits: AgentLimits,
     ) -> Self {
         Self {
-            provider,
+            provider: RetryingProvider::new(provider, RetryPolicy::default()),
             model: model.into(),
             tools,
             limits,
             history: Vec::new(),
             turns_started: 0,
+            side_effect_checkpoint: false,
         }
     }
 
     pub fn history(&self) -> &[Message] {
         &self.history
+    }
+
+    /// Marks that an external action completed during this turn.
+    pub fn mark_side_effect_completed(&mut self) {
+        self.side_effect_checkpoint = true;
     }
 
     pub async fn run_turn(
@@ -83,7 +91,14 @@ impl Agent {
             return StopReason::ChannelClosed;
         }
 
-        let mut stream = self.provider.stream(request, cancellation.clone());
+        let checkpoint = if std::mem::take(&mut self.side_effect_checkpoint) {
+            RetryCheckpoint::SideEffectCompleted
+        } else {
+            RetryCheckpoint::BeforeSideEffect
+        };
+        let mut stream =
+            self.provider
+                .stream_with_checkpoint(request, cancellation.clone(), checkpoint);
         let mut text = String::new();
         let mut tool_calls = 0usize;
         loop {
@@ -360,5 +375,21 @@ mod tests {
             Some(Ok(AppEvent::ProviderCancelled))
         ));
         assert!(receiver.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn side_effect_checkpoint_prevents_provider_replay() {
+        let provider = Arc::new(FakeProvider::new(vec![Err(ProviderError::Transport)]));
+        let mut agent = Agent::new(provider.clone(), "test-model", Vec::new(), limits(2, 3));
+        agent.mark_side_effect_completed();
+        let (sender, _receiver) = mpsc::channel(8);
+
+        assert_eq!(
+            agent
+                .run_turn("continue", CancellationToken::new(), sender)
+                .await,
+            StopReason::ProviderError(ProviderError::Transport)
+        );
+        assert_eq!(provider.requests().len(), 1);
     }
 }
