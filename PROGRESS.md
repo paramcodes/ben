@@ -33,7 +33,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | Task | Ticket | Status | Evidence / note |
 |---:|---|---|---|
 | 1 | [#1](https://github.com/paramcodes/ben/issues/1) | Complete | [PR #47](https://github.com/paramcodes/ben/pull/47) — merged 2026-10-03 |
-| 2 | [#2](https://github.com/paramcodes/ben/issues/2) | In progress | [PR #48](https://github.com/paramcodes/ben/pull/48) |
+| 2 | [#2](https://github.com/paramcodes/ben/issues/2) | Complete | [PR #48](https://github.com/paramcodes/ben/pull/48) — merged 2026-10-03 |
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Open | |
 | 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Open | |
 | 5 | [#5](https://github.com/paramcodes/ben/issues/5) | Open | |
@@ -84,3 +84,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | PR | Ticket | Merged | Summary |
 |---|---:|---|---|
 | [PR #47](https://github.com/paramcodes/ben/pull/47) | 1 | Merged 2026-10-03 | chore: scaffold terminal agent |
+| [PR #48](https://github.com/paramcodes/ben/pull/48) | 2 | Merged 2026-10-03 | chore: pin initial Rust dependencies |
