@@ -67,6 +67,14 @@ pub enum ProviderError {
     Cancelled,
     #[error("provider transport failed")]
     Transport,
+    #[error("provider request timed out")]
+    Timeout,
+    #[error("provider returned HTTP status {status}")]
+    HttpStatus { status: u16 },
+    #[error("provider returned API error (HTTP {status})")]
+    Api { status: u16, code: Option<String> },
+    #[error("provider request could not be constructed")]
+    InvalidRequest,
     #[error("provider returned an invalid response")]
     InvalidResponse,
     #[error("provider rejected the request")]
