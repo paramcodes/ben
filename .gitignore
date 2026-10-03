@@ -1,0 +1,9 @@
+/target/
+/benchmarks/**/node_modules/
+/benchmarks/**/dist/
+/benchmarks/**/bin/
+*.profraw
+*.core
+.env
+.env.*
+!.env.example
