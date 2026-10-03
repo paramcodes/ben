@@ -31,6 +31,7 @@ pub enum Status {
     Tool(String),
     Connecting,
     Streaming,
+    Busy,
     Completed,
     Failed,
     Cancelled,
@@ -51,19 +52,29 @@ pub struct AppState {
     pub pending_approval: Option<PendingApproval>,
     pub transcript_scroll: u16,
     pub should_exit: bool,
+    pub cancel_requested: bool,
 }
 
 /// Apply one event to state. This function performs no terminal I/O.
 pub fn update(mut state: AppState, event: AppEvent) -> AppState {
     match event {
         AppEvent::Key(key) => update_key(&mut state, key),
-        AppEvent::Submit => submit(&mut state),
+        AppEvent::Submit => {
+            if is_busy(&state.status) {
+                state.status = Status::Busy;
+            } else {
+                submit(&mut state);
+            }
+        }
         AppEvent::AppendOutput(text) => state.transcript.push(TranscriptEntry {
             speaker: Speaker::Assistant,
             text,
         }),
         AppEvent::ToolStatus(status) => state.status = Status::Tool(status),
-        AppEvent::ProviderStarted => state.status = Status::Connecting,
+        AppEvent::ProviderStarted => {
+            state.status = Status::Connecting;
+            state.cancel_requested = false;
+        }
         AppEvent::ProviderEvent(event) => match event {
             ProviderEvent::TextDelta(text) => {
                 state.status = Status::Streaming;
@@ -80,19 +91,47 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
                     });
                 }
             }
-            ProviderEvent::Completed(_) => state.status = Status::Completed,
+            ProviderEvent::Completed(_) => {
+                state.status = Status::Completed;
+                state.cancel_requested = false;
+            }
             ProviderEvent::ToolCallStarted { .. }
             | ProviderEvent::ToolCallArgumentsDelta { .. }
             | ProviderEvent::ToolCallCompleted(_)
             | ProviderEvent::Usage(_) => state.status = Status::Streaming,
         },
-        AppEvent::ProviderFailed(_) => state.status = Status::Failed,
-        AppEvent::ProviderCancelled => state.status = Status::Cancelled,
+        AppEvent::ProviderFailed(_) => {
+            state.status = Status::Failed;
+            state.cancel_requested = false;
+        }
+        AppEvent::ProviderCancelled => {
+            state.status = Status::Cancelled;
+            state.cancel_requested = false;
+        }
+        AppEvent::Cancel => {
+            if is_busy(&state.status) {
+                state.cancel_requested = true;
+            }
+        }
+        AppEvent::Interrupt => {
+            if is_busy(&state.status) {
+                state.cancel_requested = true;
+            } else {
+                state.should_exit = true;
+            }
+        }
         AppEvent::ScrollUp => state.transcript_scroll = state.transcript_scroll.saturating_sub(1),
         AppEvent::ScrollDown => state.transcript_scroll = state.transcript_scroll.saturating_add(1),
         AppEvent::Quit => state.should_exit = true,
     }
     state
+}
+
+fn is_busy(status: &Status) -> bool {
+    matches!(
+        status,
+        Status::Working | Status::Connecting | Status::Streaming | Status::Busy
+    )
 }
 
 fn update_key(state: &mut AppState, key: KeyEvent) {
@@ -363,5 +402,34 @@ mod tests {
         let state = update(AppState::default(), AppEvent::ProviderCancelled);
 
         assert_eq!(state.status, Status::Cancelled);
+    }
+
+    #[test]
+    fn submit_while_busy_keeps_prompt_and_sets_visible_busy_status() {
+        let state = AppState {
+            input: "another question".into(),
+            status: Status::Streaming,
+            ..AppState::default()
+        };
+
+        let state = update(state, AppEvent::Submit);
+
+        assert_eq!(state.status, Status::Busy);
+        assert_eq!(state.input, "another question");
+        assert_eq!(state.transcript.len(), 0);
+    }
+
+    #[test]
+    fn cancel_requests_stop_for_active_turn_and_interrupt_quits_when_idle() {
+        let state = AppState {
+            status: Status::Streaming,
+            ..AppState::default()
+        };
+        let state = update(state, AppEvent::Cancel);
+        assert!(state.cancel_requested);
+        assert!(!state.should_exit);
+
+        let state = update(AppState::default(), AppEvent::Interrupt);
+        assert!(state.should_exit);
     }
 }
