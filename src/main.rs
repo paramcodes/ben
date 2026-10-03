@@ -1,8 +1,9 @@
 pub mod app;
+mod cli;
 mod telemetry;
 pub mod ui;
 
-use std::{ffi::OsStr, io::IsTerminal, process::ExitCode};
+use std::{io::IsTerminal, process::ExitCode};
 
 #[derive(Debug, thiserror::Error)]
 enum StartupError {
@@ -10,6 +11,10 @@ enum StartupError {
     Telemetry(#[from] telemetry::TelemetryError),
     #[error("terminal setup failed")]
     Terminal(#[from] std::io::Error),
+    #[error("command line options are invalid")]
+    Cli(#[from] cli::CliError),
+    #[error("workspace could not be selected")]
+    Workspace(std::io::Error),
     #[cfg(debug_assertions)]
     #[error("simulated startup failure")]
     Simulated,
@@ -20,6 +25,8 @@ impl StartupError {
         match self {
             Self::Telemetry(_) => "telemetry_initialization",
             Self::Terminal(_) => "terminal_setup",
+            Self::Cli(_) => "cli_options",
+            Self::Workspace(_) => "workspace_selection",
             #[cfg(debug_assertions)]
             Self::Simulated => "simulated_startup_failure",
         }
@@ -31,6 +38,12 @@ impl StartupError {
                 "error: diagnostics are already initialized; restart the application and retry."
             }
             Self::Terminal(_) => "error: terminal setup failed; check terminal access and retry.",
+            Self::Cli(_) => {
+                "error: command line options could not be read; run ben --help and retry."
+            }
+            Self::Workspace(_) => {
+                "error: workspace could not be selected; check the directory and retry."
+            }
             #[cfg(debug_assertions)]
             Self::Simulated => {
                 "error: startup failed; review the diagnostic output and correct the reported issue."
@@ -59,9 +72,14 @@ fn run() -> Result<(), StartupError> {
         return Err(StartupError::Simulated);
     }
 
-    if std::env::args_os().nth(1).as_deref() == Some(OsStr::new("--version")) {
-        println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
-    } else if std::io::stdout().is_terminal() {
+    let options = cli::parse()?;
+    std::env::set_current_dir(&options.workspace).map_err(StartupError::Workspace)?;
+    tracing::debug!(
+        has_model_override = options.model.is_some(),
+        "CLI options parsed"
+    );
+
+    if std::io::stdout().is_terminal() {
         app::terminal::with_terminal(app::terminal::CrosstermControl, app::run)?;
     }
 
