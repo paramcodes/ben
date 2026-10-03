@@ -40,7 +40,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 6 | [#6](https://github.com/paramcodes/ben/issues/6) | Complete | [PR #52](https://github.com/paramcodes/ben/pull/52) — merged 2026-10-03 |
 | 7 | [#7](https://github.com/paramcodes/ben/issues/7) | Complete | [PR #53](https://github.com/paramcodes/ben/pull/53) — merged 2026-10-03 |
 | 8 | [#8](https://github.com/paramcodes/ben/issues/8) | Complete | [PR #54](https://github.com/paramcodes/ben/pull/54) — merged 2026-10-03 |
-| 9 | [#9](https://github.com/paramcodes/ben/issues/9) | In progress | [PR #55](https://github.com/paramcodes/ben/pull/55) — open |
+| 9 | [#9](https://github.com/paramcodes/ben/issues/9) | Complete | [PR #55](https://github.com/paramcodes/ben/pull/55) — merged 2026-10-03 |
 | 10 | [#10](https://github.com/paramcodes/ben/issues/10) | Open | |
 | 11 | [#11](https://github.com/paramcodes/ben/issues/11) | Open | |
 | 12 | [#12](https://github.com/paramcodes/ben/issues/12) | Open | |
@@ -91,4 +91,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #52](https://github.com/paramcodes/ben/pull/52) | 6 | Merged 2026-10-03 | feat: render responsive TUI shell |
 | [PR #53](https://github.com/paramcodes/ben/pull/53) | 7 | Merged 2026-10-03 | feat: handle terminal input events |
 | [PR #54](https://github.com/paramcodes/ben/pull/54) | 8 | Merged 2026-10-03 | feat: add conversation and prompt input |
-| [PR #55](https://github.com/paramcodes/ben/pull/55) | 9 | Open | feat: parse CLI startup options |
+| [PR #55](https://github.com/paramcodes/ben/pull/55) | 9 | Merged 2026-10-03 | feat: parse CLI startup options |
