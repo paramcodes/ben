@@ -1,5 +1,6 @@
 pub mod app;
 mod telemetry;
+pub mod ui;
 
 use std::{ffi::OsStr, io::IsTerminal, process::ExitCode};
 
