@@ -7,6 +7,7 @@ pub fn label(status: &Status) -> String {
         Status::Tool(description) => format!("Tool: {description}"),
         Status::Connecting => "Connecting".to_owned(),
         Status::Streaming => "Streaming".to_owned(),
+        Status::Busy => "Busy — finish or cancel the current turn".to_owned(),
         Status::Completed => "Completed".to_owned(),
         Status::Failed => "Failed".to_owned(),
         Status::Cancelled => "Cancelled".to_owned(),

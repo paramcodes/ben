@@ -14,6 +14,8 @@ pub enum AppEvent {
     ProviderEvent(ProviderEvent),
     ProviderFailed(ProviderError),
     ProviderCancelled,
+    Cancel,
+    Interrupt,
     Quit,
 }
 
@@ -21,7 +23,10 @@ pub fn map_key(key: KeyEvent) -> Option<AppEvent> {
     use crossterm::event::{KeyCode, KeyModifiers};
 
     match key.code {
-        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => Some(AppEvent::Quit),
+        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+            Some(AppEvent::Interrupt)
+        }
+        KeyCode::Esc => Some(AppEvent::Cancel),
         KeyCode::Enter => Some(AppEvent::Submit),
         KeyCode::Up => Some(AppEvent::ScrollUp),
         KeyCode::Down => Some(AppEvent::ScrollDown),
@@ -48,10 +53,17 @@ mod tests {
     }
 
     #[test]
-    fn maps_ctrl_c_to_quit() {
+    fn maps_ctrl_c_to_interrupt() {
         let event = map_key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL));
 
-        assert_eq!(event, Some(AppEvent::Quit));
+        assert_eq!(event, Some(AppEvent::Interrupt));
+    }
+
+    #[test]
+    fn maps_escape_to_cancel() {
+        let event = map_key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
+
+        assert_eq!(event, Some(AppEvent::Cancel));
     }
 
     #[test]

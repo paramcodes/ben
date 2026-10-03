@@ -159,7 +159,7 @@ impl Agent {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
+    use std::{sync::Arc, time::Duration};
 
     use tokio::sync::mpsc;
     use tokio_util::sync::CancellationToken;
@@ -324,5 +324,41 @@ mod tests {
                 .await,
             StopReason::MaxToolCalls
         );
+    }
+
+    #[tokio::test]
+    async fn cancellation_stops_fake_provider_and_returns_cancelled_reason() {
+        let provider = Arc::new(FakeProvider::with_delay(
+            vec![
+                Ok(ProviderEvent::TextDelta("partial".into())),
+                Ok(ProviderEvent::TextDelta("must not arrive".into())),
+                Ok(ProviderEvent::Completed(CompletionReason::EndTurn)),
+            ],
+            Duration::from_millis(50),
+        ));
+        let mut agent = Agent::new(provider, "test-model", Vec::new(), limits(2, 3));
+        let cancellation = CancellationToken::new();
+        let turn_cancellation = cancellation.clone();
+        let (sender, mut receiver) = mpsc::channel(8);
+        let task =
+            tokio::spawn(
+                async move { agent.run_turn("question", turn_cancellation, sender).await },
+            );
+
+        assert!(matches!(
+            receiver.recv().await,
+            Some(Ok(AppEvent::ProviderStarted))
+        ));
+        assert!(matches!(
+            receiver.recv().await,
+            Some(Ok(AppEvent::ProviderEvent(ProviderEvent::TextDelta(text)))) if text == "partial"
+        ));
+        cancellation.cancel();
+        assert_eq!(task.await.unwrap(), StopReason::Cancelled);
+        assert!(matches!(
+            receiver.recv().await,
+            Some(Ok(AppEvent::ProviderCancelled))
+        ));
+        assert!(receiver.try_recv().is_err());
     }
 }
