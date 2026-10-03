@@ -1,3 +1,173 @@
+use std::collections::HashMap;
+
+use crate::agent::message::ToolCallId;
+use crate::providers::types::{CompletionReason, ProviderError, ProviderEvent, ToolCall, Usage};
+
+#[derive(Debug, Default)]
+pub struct ResponsesEventMapper {
+    calls: HashMap<String, PendingToolCall>,
+}
+
+#[derive(Debug)]
+struct PendingToolCall {
+    id: ToolCallId,
+    name: String,
+    arguments: String,
+}
+
+impl ResponsesEventMapper {
+    pub fn map(&mut self, frame: &SseFrame) -> Result<Vec<ProviderEvent>, ProviderError> {
+        let value = frame
+            .json_data()
+            .map_err(|_| ProviderError::InvalidResponse)?;
+        let kind = value
+            .get("type")
+            .and_then(serde_json::Value::as_str)
+            .or(frame.event.as_deref())
+            .ok_or(ProviderError::InvalidResponse)?;
+        let mut events = Vec::new();
+        match kind {
+            "response.output_text.delta" => {
+                let delta = value
+                    .get("delta")
+                    .and_then(serde_json::Value::as_str)
+                    .ok_or(ProviderError::InvalidResponse)?;
+                events.push(ProviderEvent::TextDelta(delta.to_owned()));
+            }
+            "response.output_item.added" => {
+                let item = value.get("item").ok_or(ProviderError::InvalidResponse)?;
+                if item.get("type").and_then(serde_json::Value::as_str) == Some("function_call") {
+                    let item_id = string_field(item, "id")?;
+                    let call_id = string_field(item, "call_id")?;
+                    let name = string_field(item, "name")?;
+                    let arguments = item
+                        .get("arguments")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .to_owned();
+                    let id = ToolCallId::new(call_id);
+                    self.calls.insert(
+                        item_id.to_owned(),
+                        PendingToolCall {
+                            id: id.clone(),
+                            name: name.to_owned(),
+                            arguments,
+                        },
+                    );
+                    events.push(ProviderEvent::ToolCallStarted {
+                        id,
+                        name: name.to_owned(),
+                    });
+                }
+            }
+            "response.function_call_arguments.delta" => {
+                let item_id = string_field(&value, "item_id")?;
+                let delta = string_field(&value, "delta")?;
+                if let Some(call) = self.calls.get_mut(item_id) {
+                    call.arguments.push_str(delta);
+                    events.push(ProviderEvent::ToolCallArgumentsDelta {
+                        id: call.id.clone(),
+                        delta: delta.to_owned(),
+                    });
+                }
+            }
+            "response.function_call_arguments.done" => {
+                let item_id = string_field(&value, "item_id")?;
+                let arguments = string_field(&value, "arguments")?;
+                if let Some(call) = self.calls.remove(item_id) {
+                    events.push(ProviderEvent::ToolCallCompleted(ToolCall {
+                        id: call.id,
+                        name: call.name,
+                        arguments: arguments.to_owned(),
+                    }));
+                }
+            }
+            "response.completed" => {
+                let response = value
+                    .get("response")
+                    .ok_or(ProviderError::InvalidResponse)?;
+                if let Some(usage) = response.get("usage") {
+                    let input_tokens = usage
+                        .get("input_tokens")
+                        .and_then(serde_json::Value::as_u64)
+                        .ok_or(ProviderError::InvalidResponse)?;
+                    let output_tokens = usage
+                        .get("output_tokens")
+                        .and_then(serde_json::Value::as_u64)
+                        .ok_or(ProviderError::InvalidResponse)?;
+                    events.push(ProviderEvent::Usage(Usage {
+                        input_tokens,
+                        output_tokens,
+                    }));
+                }
+                let has_calls = response
+                    .get("output")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|items| {
+                        items.iter().any(|item| {
+                            item.get("type").and_then(serde_json::Value::as_str)
+                                == Some("function_call")
+                        })
+                    });
+                events.push(ProviderEvent::Completed(if has_calls {
+                    CompletionReason::ToolCalls
+                } else {
+                    CompletionReason::EndTurn
+                }));
+            }
+            "response.incomplete" => {
+                let reason = value
+                    .get("response")
+                    .and_then(|response| response.get("incomplete_details"))
+                    .and_then(|details| details.get("reason"))
+                    .and_then(serde_json::Value::as_str);
+                events.push(ProviderEvent::Completed(match reason {
+                    Some("content_filter") => CompletionReason::ContentFilter,
+                    _ => CompletionReason::LengthLimit,
+                }));
+            }
+            "response.failed" | "error" => {
+                let error = value
+                    .get("response")
+                    .and_then(|r| r.get("error"))
+                    .or_else(|| value.get("error"))
+                    .unwrap_or(&value);
+                return Err(ProviderError::Api {
+                    status: 0,
+                    code: error
+                        .get("code")
+                        .and_then(serde_json::Value::as_str)
+                        .and_then(safe_code),
+                });
+            }
+            // Lifecycle, metadata, content-part, and future typed events do not alter shared state.
+            _ => {}
+        }
+        Ok(events)
+    }
+
+    /// Discards any calls whose argument stream ended before its `done` event.
+    pub fn finish(&mut self) {
+        self.calls.clear();
+    }
+}
+
+fn string_field<'a>(value: &'a serde_json::Value, field: &str) -> Result<&'a str, ProviderError> {
+    value
+        .get(field)
+        .and_then(serde_json::Value::as_str)
+        .ok_or(ProviderError::InvalidResponse)
+}
+
+fn safe_code(code: &str) -> Option<String> {
+    let safe: String = code
+        .chars()
+        .take(64)
+        .filter(|ch| ch.is_ascii_alphanumeric() || *ch == '_' || *ch == '-')
+        .collect();
+    (!safe.is_empty()).then_some(safe)
+}
+
 const DEFAULT_MAX_FRAME_SIZE: usize = 1024 * 1024;
 
 #[derive(Debug, thiserror::Error, Clone, Copy, PartialEq, Eq)]
@@ -195,5 +365,97 @@ mod tests {
             decoder.push(b"data: 1234"),
             Err(SseError::FrameTooLarge)
         ));
+    }
+}
+
+#[cfg(test)]
+mod mapper_tests {
+    use super::{ResponsesEventMapper, SseFrame};
+    use crate::agent::message::ToolCallId;
+    use crate::providers::types::{
+        CompletionReason, ProviderError, ProviderEvent, ToolCall, Usage,
+    };
+
+    fn frame(event: &str, data: &str) -> SseFrame {
+        SseFrame {
+            event: Some(event.into()),
+            data: data.into(),
+        }
+    }
+
+    #[test]
+    fn maps_text_delta_and_ignores_unknown_event() {
+        let mut mapper = ResponsesEventMapper::default();
+        assert_eq!(
+            mapper
+                .map(&frame(
+                    "response.output_text.delta",
+                    r#"{"type":"response.output_text.delta","delta":"hi"}"#
+                ))
+                .unwrap(),
+            vec![ProviderEvent::TextDelta("hi".into())]
+        );
+        assert!(
+            mapper
+                .map(&frame("response.created", r#"{"type":"response.created"}"#))
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            mapper
+                .map(&frame("vendor.future", r#"{"type":"vendor.future"}"#))
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn accumulates_tool_arguments_and_completes_only_on_done() {
+        let mut mapper = ResponsesEventMapper::default();
+        let added = mapper.map(&frame("response.output_item.added", r#"{"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","id":"fc_1","call_id":"call_1","name":"read_file","arguments":""}}"#)).unwrap();
+        assert_eq!(
+            added,
+            vec![ProviderEvent::ToolCallStarted {
+                id: ToolCallId::new("call_1"),
+                name: "read_file".into()
+            }]
+        );
+        assert_eq!(mapper.map(&frame("response.function_call_arguments.delta", r#"{"type":"response.function_call_arguments.delta","item_id":"fc_1","delta":"{\"path\":"}"#)).unwrap(), vec![ProviderEvent::ToolCallArgumentsDelta { id: ToolCallId::new("call_1"), delta: "{\"path\":".into() }]);
+        assert!(mapper.map(&frame("response.function_call_arguments.delta", r#"{"type":"response.function_call_arguments.delta","item_id":"fc_1","delta":"\"a\"}"}"#)).unwrap().len() == 1);
+        assert_eq!(mapper.map(&frame("response.function_call_arguments.done", r#"{"type":"response.function_call_arguments.done","item_id":"fc_1","arguments":"{\"path\":\"a\"}"}"#)).unwrap(), vec![ProviderEvent::ToolCallCompleted(ToolCall { id: ToolCallId::new("call_1"), name: "read_file".into(), arguments: r#"{"path":"a"}"#.into() })]);
+    }
+
+    #[test]
+    fn incomplete_tool_arguments_never_complete_at_eof() {
+        let mut mapper = ResponsesEventMapper::default();
+        mapper.map(&frame("response.output_item.added", r#"{"type":"response.output_item.added","item":{"type":"function_call","id":"fc_1","call_id":"call_1","name":"read_file","arguments":""}}"#)).unwrap();
+        mapper
+            .map(&frame(
+                "response.function_call_arguments.delta",
+                r#"{"type":"response.function_call_arguments.delta","item_id":"fc_1","delta":"{"}"#,
+            ))
+            .unwrap();
+        mapper.finish();
+    }
+
+    #[test]
+    fn maps_response_completion_usage_and_failures() {
+        let mut mapper = ResponsesEventMapper::default();
+        assert_eq!(mapper.map(&frame("response.completed", r#"{"type":"response.completed","response":{"status":"completed","output":[],"usage":{"input_tokens":3,"output_tokens":5}}}"#)).unwrap(), vec![ProviderEvent::Usage(Usage { input_tokens: 3, output_tokens: 5 }), ProviderEvent::Completed(CompletionReason::EndTurn)]);
+        assert_eq!(
+            mapper
+                .map(&frame(
+                    "response.incomplete",
+                    r#"{"type":"response.incomplete","response":{"incomplete_details":{"reason":"content_filter"}}}"#
+                ))
+                .unwrap(),
+            vec![ProviderEvent::Completed(CompletionReason::ContentFilter)]
+        );
+        assert!(
+            matches!(mapper.map(&frame("error", r#"{"type":"error","code":"bad_request","message":"secret"}"#)), Err(ProviderError::Api { status: 0, code: Some(code) }) if code == "bad_request")
+        );
+        assert!(
+            matches!(mapper.map(&frame("response.failed", r#"{"type":"response.failed","response":{"error":{"code":"failed","message":"secret"}}}"#)), Err(ProviderError::Api { status: 0, code: Some(code) }) if code == "failed")
+        );
     }
 }
