@@ -32,7 +32,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 
 | Task | Ticket | Status | Evidence / note |
 |---:|---|---|---|
-| 1 | [#1](https://github.com/paramcodes/ben/issues/1) | Open | |
+| 1 | [#1](https://github.com/paramcodes/ben/issues/1) | In progress | [PR #47](https://github.com/paramcodes/ben/pull/47) |
 | 2 | [#2](https://github.com/paramcodes/ben/issues/2) | Open | |
 | 3 | [#3](https://github.com/paramcodes/ben/issues/3) | Open | |
 | 4 | [#4](https://github.com/paramcodes/ben/issues/4) | Open | |
