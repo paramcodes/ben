@@ -1,3 +1,4 @@
+use crate::providers::types::{ProviderError, ProviderEvent};
 use crossterm::event::KeyEvent;
 
 /// Input and internal messages that can change application state.
@@ -9,6 +10,10 @@ pub enum AppEvent {
     ScrollDown,
     AppendOutput(String),
     ToolStatus(String),
+    ProviderStarted,
+    ProviderEvent(ProviderEvent),
+    ProviderFailed(ProviderError),
+    ProviderCancelled,
     Quit,
 }
 
