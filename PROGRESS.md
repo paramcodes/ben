@@ -42,7 +42,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 8 | [#8](https://github.com/paramcodes/ben/issues/8) | Complete | [PR #54](https://github.com/paramcodes/ben/pull/54) — merged 2026-10-03 |
 | 9 | [#9](https://github.com/paramcodes/ben/issues/9) | Complete | [PR #55](https://github.com/paramcodes/ben/pull/55) — merged 2026-10-03 |
 | 10 | [#10](https://github.com/paramcodes/ben/issues/10) | Complete | [PR #56](https://github.com/paramcodes/ben/pull/56) — merged 2026-10-03 |
-| 11 | [#11](https://github.com/paramcodes/ben/issues/11) | In progress | [PR #57](https://github.com/paramcodes/ben/pull/57) — open |
+| 11 | [#11](https://github.com/paramcodes/ben/issues/11) | Complete | [PR #57](https://github.com/paramcodes/ben/pull/57) — merged 2026-10-03 |
 | 12 | [#12](https://github.com/paramcodes/ben/issues/12) | Open | |
 | 13 | [#13](https://github.com/paramcodes/ben/issues/13) | Open | |
 | 14 | [#14](https://github.com/paramcodes/ben/issues/14) | Open | |
@@ -93,4 +93,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #54](https://github.com/paramcodes/ben/pull/54) | 8 | Merged 2026-10-03 | feat: add conversation and prompt input |
 | [PR #55](https://github.com/paramcodes/ben/pull/55) | 9 | Merged 2026-10-03 | feat: parse CLI startup options |
 | [PR #56](https://github.com/paramcodes/ben/pull/56) | 10 | Merged 2026-10-03 | feat: load validated configuration securely |
-| [PR #57](https://github.com/paramcodes/ben/pull/57) | 11 | Open | feat: define provider-neutral model interface |
+| [PR #57](https://github.com/paramcodes/ben/pull/57) | 11 | Merged 2026-10-03 | feat: define provider-neutral model interface |
