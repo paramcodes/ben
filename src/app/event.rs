@@ -20,7 +20,12 @@ pub fn map_key(key: KeyEvent) -> Option<AppEvent> {
         KeyCode::Enter => Some(AppEvent::Submit),
         KeyCode::Up => Some(AppEvent::ScrollUp),
         KeyCode::Down => Some(AppEvent::ScrollDown),
-        KeyCode::Char(_) | KeyCode::Backspace => Some(AppEvent::Key(key)),
+        KeyCode::Char(_)
+        | KeyCode::Backspace
+        | KeyCode::Left
+        | KeyCode::Right
+        | KeyCode::Home
+        | KeyCode::End => Some(AppEvent::Key(key)),
         _ => None,
     }
 }
