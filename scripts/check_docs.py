@@ -33,7 +33,7 @@ def main() -> int:
         print(f"expected 46 valid progress rows, found {len(rows)}", file=sys.stderr)
         return 1
     for number, ticket, status, evidence in rows:
-        if status == "Complete" and not re.search(r"\bPR #\d+\b", evidence):
+        if status == "Complete" and not re.search(r"\bPR #\d+\b.*\bmerged\b", evidence, re.I):
             print(f"Task {number} is Complete without merged PR evidence", file=sys.stderr)
             return 1
         if ticket != "TBD" and not re.search(r"https://github\.com/paramcodes/ben/issues/\d+", ticket):

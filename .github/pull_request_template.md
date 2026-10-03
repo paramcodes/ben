@@ -22,4 +22,4 @@
 
 Closes #
 
-- [ ] Updated `PROGRESS.md`; ticket is marked Complete only after this PR is merged.
+- [ ] Updated `PROGRESS.md` to In progress with this PR link. After merge, sync Complete status with `scripts/update_progress.py`.

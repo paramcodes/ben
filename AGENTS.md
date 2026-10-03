@@ -10,7 +10,7 @@ This repository builds a local-first Rust coding agent whose primary interface i
 - Before coding, read the issue, its plan task, the relevant spec sections, and prerequisite tasks' interfaces.
 - Keep changes within the ticket. If the plan conflicts with the spec, follow the spec and record the decision in `PROGRESS.md` and the PR description.
 - Keep external model calls out of automated checks. Use the deterministic fake provider and local mock HTTP server.
-- Update `PROGRESS.md` in the same PR: mark a ticket `In progress` while its PR is open and `Complete` only after merge; record merged PR number and link as the completion evidence.
+- In the ticket PR, mark the row `In progress` and record its PR link. After merge, run `scripts/update_progress.py --task N --pr PR_NUMBER`; it checks GitHub's merged state, changes the row to `Complete`, and records the merged PR as evidence. Commit and push that small ledger update to `main`.
 - A local commit or an open PR is not completion. Merge only after required checks pass and the diff has been reviewed.
 - PRs should include What changed, Why, How it works, Verification commands and results, and linked issue.
 
@@ -36,4 +36,4 @@ This is a CLI/TUI project. Use local command-line checks only; browser automatio
 
 ## PR and merge record
 
-Use `.github/pull_request_template.md`. After a PR merges, update the matching row in `PROGRESS.md` with the merged PR number and URL. Keep issue state synchronized with the progress ledger. Do not mark work complete based only on passing local checks.
+Use `.github/pull_request_template.md`. After a PR merges, use `scripts/update_progress.py` to update the matching row and PR history; the script refuses to mark an unmerged PR complete. Keep issue state synchronized with the progress ledger. Do not mark work complete based only on passing local checks.

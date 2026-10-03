@@ -1,0 +1,232 @@
+{
+  "1": {
+    "number": 1,
+    "url": "https://github.com/paramcodes/ben/issues/1",
+    "title": "[Task 01] Scaffold the Rust executable"
+  },
+  "2": {
+    "number": 2,
+    "url": "https://github.com/paramcodes/ben/issues/2",
+    "title": "[Task 02] Select and lock compatible dependencies"
+  },
+  "3": {
+    "number": 3,
+    "url": "https://github.com/paramcodes/ben/issues/3",
+    "title": "[Task 03] Add structured top-level errors and logs"
+  },
+  "4": {
+    "number": 4,
+    "url": "https://github.com/paramcodes/ben/issues/4",
+    "title": "[Task 04] Add terminal setup and guaranteed restoration"
+  },
+  "5": {
+    "number": 5,
+    "url": "https://github.com/paramcodes/ben/issues/5",
+    "title": "[Task 05] Define application state and event types"
+  },
+  "6": {
+    "number": 6,
+    "url": "https://github.com/paramcodes/ben/issues/6",
+    "title": "[Task 06] Render a static responsive layout"
+  },
+  "7": {
+    "number": 7,
+    "url": "https://github.com/paramcodes/ben/issues/7",
+    "title": "[Task 07] Implement keyboard input and event loop"
+  },
+  "8": {
+    "number": 8,
+    "url": "https://github.com/paramcodes/ben/issues/8",
+    "title": "[Task 08] Build the conversation and input widgets"
+  },
+  "9": {
+    "number": 9,
+    "url": "https://github.com/paramcodes/ben/issues/9",
+    "title": "[Task 09] Parse CLI arguments and workspace selection"
+  },
+  "10": {
+    "number": 10,
+    "url": "https://github.com/paramcodes/ben/issues/10",
+    "title": "[Task 10] Load configuration and protect credentials"
+  },
+  "11": {
+    "number": 11,
+    "url": "https://github.com/paramcodes/ben/issues/11",
+    "title": "[Task 11] Define provider-neutral request and event types"
+  },
+  "12": {
+    "number": 12,
+    "url": "https://github.com/paramcodes/ben/issues/12",
+    "title": "[Task 12] Implement OpenAI Responses request mapping"
+  },
+  "13": {
+    "number": 13,
+    "url": "https://github.com/paramcodes/ben/issues/13",
+    "title": "[Task 13] Add HTTP transport and typed provider errors"
+  },
+  "14": {
+    "number": 14,
+    "url": "https://github.com/paramcodes/ben/issues/14",
+    "title": "[Task 14] Parse SSE frames incrementally"
+  },
+  "15": {
+    "number": 15,
+    "url": "https://github.com/paramcodes/ben/issues/15",
+    "title": "[Task 15] Map Responses SSE events into shared provider events"
+  },
+  "16": {
+    "number": 16,
+    "url": "https://github.com/paramcodes/ben/issues/16",
+    "title": "[Task 16] Stream provider events into app state"
+  },
+  "17": {
+    "number": 17,
+    "url": "https://github.com/paramcodes/ben/issues/17",
+    "title": "[Task 17] Add a deterministic fake provider"
+  },
+  "18": {
+    "number": 18,
+    "url": "https://github.com/paramcodes/ben/issues/18",
+    "title": "[Task 18] Implement the agent turn state machine"
+  },
+  "19": {
+    "number": 19,
+    "url": "https://github.com/paramcodes/ben/issues/19",
+    "title": "[Task 19] Add cancellation and busy-state behavior"
+  },
+  "20": {
+    "number": 20,
+    "url": "https://github.com/paramcodes/ben/issues/20",
+    "title": "[Task 20] Define retry and duplicate-action rules"
+  },
+  "21": {
+    "number": 21,
+    "url": "https://github.com/paramcodes/ben/issues/21",
+    "title": "[Task 21] Establish workspace root and path normalization"
+  },
+  "22": {
+    "number": 22,
+    "url": "https://github.com/paramcodes/ben/issues/22",
+    "title": "[Task 22] Define tool contract and registry"
+  },
+  "23": {
+    "number": 23,
+    "url": "https://github.com/paramcodes/ben/issues/23",
+    "title": "[Task 23] Add ignore-aware file listing and search"
+  },
+  "24": {
+    "number": 24,
+    "url": "https://github.com/paramcodes/ben/issues/24",
+    "title": "[Task 24] Add safe bounded file reading"
+  },
+  "25": {
+    "number": 25,
+    "url": "https://github.com/paramcodes/ben/issues/25",
+    "title": "[Task 25] Assemble repository instructions and bounded context"
+  },
+  "26": {
+    "number": 26,
+    "url": "https://github.com/paramcodes/ben/issues/26",
+    "title": "[Task 26] Expose read-only tools to the agent"
+  },
+  "27": {
+    "number": 27,
+    "url": "https://github.com/paramcodes/ben/issues/27",
+    "title": "[Task 27] Model approval decisions and action fingerprints"
+  },
+  "28": {
+    "number": 28,
+    "url": "https://github.com/paramcodes/ben/issues/28",
+    "title": "[Task 28] Build the approval prompt UI"
+  },
+  "29": {
+    "number": 29,
+    "url": "https://github.com/paramcodes/ben/issues/29",
+    "title": "[Task 29] Implement proposed edit and diff rendering"
+  },
+  "30": {
+    "number": 30,
+    "url": "https://github.com/paramcodes/ben/issues/30",
+    "title": "[Task 30] Apply approved edit atomically"
+  },
+  "31": {
+    "number": 31,
+    "url": "https://github.com/paramcodes/ben/issues/31",
+    "title": "[Task 31] Implement bounded command execution"
+  },
+  "32": {
+    "number": 32,
+    "url": "https://github.com/paramcodes/ben/issues/32",
+    "title": "[Task 32] Connect approvals to the tool execution path"
+  },
+  "33": {
+    "number": 33,
+    "url": "https://github.com/paramcodes/ben/issues/33",
+    "title": "[Task 33] Define versioned session data"
+  },
+  "34": {
+    "number": 34,
+    "url": "https://github.com/paramcodes/ben/issues/34",
+    "title": "[Task 34] Save and load sessions safely"
+  },
+  "35": {
+    "number": 35,
+    "url": "https://github.com/paramcodes/ben/issues/35",
+    "title": "[Task 35] Add resume/list/clear CLI flows"
+  },
+  "36": {
+    "number": 36,
+    "url": "https://github.com/paramcodes/ben/issues/36",
+    "title": "[Task 36] Add shutdown consistency and terminal restoration coverage"
+  },
+  "37": {
+    "number": 37,
+    "url": "https://github.com/paramcodes/ben/issues/37",
+    "title": "[Task 37] Add usage, error, and changed-file summaries"
+  },
+  "38": {
+    "number": 38,
+    "url": "https://github.com/paramcodes/ben/issues/38",
+    "title": "[Task 38] Handle terminal capability and accessibility cases"
+  },
+  "39": {
+    "number": 39,
+    "url": "https://github.com/paramcodes/ben/issues/39",
+    "title": "[Task 39] Document install, first run, controls, and safety model"
+  },
+  "40": {
+    "number": 40,
+    "url": "https://github.com/paramcodes/ben/issues/40",
+    "title": "[Task 40] Package release artifacts for initial platforms"
+  },
+  "41": {
+    "number": 41,
+    "url": "https://github.com/paramcodes/ben/issues/41",
+    "title": "[Task 41] Freeze benchmark fixtures and command protocol"
+  },
+  "42": {
+    "number": 42,
+    "url": "https://github.com/paramcodes/ben/issues/42",
+    "title": "[Task 42] Add Rust benchmark instrumentation"
+  },
+  "43": {
+    "number": 43,
+    "url": "https://github.com/paramcodes/ben/issues/43",
+    "title": "[Task 43] Build comparable Go reference workloads"
+  },
+  "44": {
+    "number": 44,
+    "url": "https://github.com/paramcodes/ben/issues/44",
+    "title": "[Task 44] Build comparable TypeScript reference workloads"
+  },
+  "45": {
+    "number": 45,
+    "url": "https://github.com/paramcodes/ben/issues/45",
+    "title": "[Task 45] Run the three-stack benchmark comparison"
+  },
+  "46": {
+    "number": 46,
+    "url": "https://github.com/paramcodes/ben/issues/46",
+    "title": "[Task 46] Measure end-to-end provider latency separately"
+  }
+}

@@ -13,6 +13,7 @@ See [`AGENTS.md`](AGENTS.md) for contributor and agent instructions.
 - Check docs and ticket tracking: `scripts/check-docs.sh`
 - Fast offline Rust loop: `scripts/verify-fast.sh [test filter]`
 - Full offline local verification: `scripts/verify.sh`
+- Record ticket PR state: `scripts/update_progress.py --task N --pr PR_NUMBER`
 - Download locked Rust dependencies on a fresh checkout: `cargo fetch --locked`
 
 Verification is CLI-only and does not need a browser or live model credentials. The Cargo scripts become usable after the Rust scaffold and dependency lockfile exist. Automated tests use fake providers and local fixtures; live provider measurements are opt-in.
