@@ -19,7 +19,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 0 — Rust project and terminal lifecycle | 1–4 | Complete |
 | 1 — TUI shell and state | 5–8 | Complete |
 | 2 — Configuration and provider boundary | 9–13 | Complete |
-| 3 — Streaming and agent loop | 14–20 | In progress |
+| 3 — Streaming and agent loop | 14–20 | Complete |
 | 4 — Workspace context and read-only tools | 21–26 | Not started |
 | 5 — Approval and side-effecting tools | 27–32 | Not started |
 | 6 — Sessions and robust recovery | 33–36 | Not started |
@@ -51,7 +51,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 17 | [#17](https://github.com/paramcodes/ben/issues/17) | Complete | [PR #63](https://github.com/paramcodes/ben/pull/63) — merged 2026-10-03 |
 | 18 | [#18](https://github.com/paramcodes/ben/issues/18) | Complete | [PR #64](https://github.com/paramcodes/ben/pull/64) — merged 2026-10-03 |
 | 19 | [#19](https://github.com/paramcodes/ben/issues/19) | Complete | [PR #65](https://github.com/paramcodes/ben/pull/65) — merged 2026-10-03 |
-| 20 | [#20](https://github.com/paramcodes/ben/issues/20) | In progress | [PR #66](https://github.com/paramcodes/ben/pull/66) |
+| 20 | [#20](https://github.com/paramcodes/ben/issues/20) | Complete | [PR #66](https://github.com/paramcodes/ben/pull/66) — merged 2026-10-03 |
 | 21 | [#21](https://github.com/paramcodes/ben/issues/21) | Open | |
 | 22 | [#22](https://github.com/paramcodes/ben/issues/22) | Open | |
 | 23 | [#23](https://github.com/paramcodes/ben/issues/23) | Open | |
@@ -102,3 +102,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #63](https://github.com/paramcodes/ben/pull/63) | 17 | Merged 2026-10-03 | Task 17: Add deterministic fake provider |
 | [PR #64](https://github.com/paramcodes/ben/pull/64) | 18 | Merged 2026-10-03 | Task 18: Implement the agent turn state machine |
 | [PR #65](https://github.com/paramcodes/ben/pull/65) | 19 | Merged 2026-10-03 | Task 19: Add cancellation and busy-state behavior |
+| [PR #66](https://github.com/paramcodes/ben/pull/66) | 20 | Merged 2026-10-03 | Task 20: Define retry and duplicate-action rules |
