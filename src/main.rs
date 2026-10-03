@@ -5,6 +5,7 @@ pub mod config;
 pub mod policy;
 pub mod providers;
 mod telemetry;
+pub mod tools;
 pub mod ui;
 
 use std::{io::IsTerminal, process::ExitCode};
