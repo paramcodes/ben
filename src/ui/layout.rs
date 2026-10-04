@@ -6,12 +6,16 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 
-use crate::app::update::AppState;
+use crate::app::update::{AppState, Screen};
 
-use super::{conversation, status};
+use super::{approval, conversation, status};
 
 pub fn render(frame: &mut Frame<'_>, state: &AppState) {
     let area = frame.area();
+    if state.screen == Screen::Approval {
+        approval::render(frame, area, state);
+        return;
+    }
     let compact = area.width < 60 || area.height < 16;
     let chunks = Layout::default()
         .direction(Direction::Vertical)
