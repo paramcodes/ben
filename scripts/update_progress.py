@@ -76,7 +76,7 @@ def main() -> int:
 
 
 def update_milestone_status(text: str, changed_task: int, changed_status: str) -> str:
-    ranges = [(0, 4), (5, 8), (9, 13), (14, 20), (21, 26), (27, 32), (33, 36), (37, 40), (41, 46)]
+    ranges = [(0, 4), (4, 8), (8, 13), (13, 20), (20, 26), (26, 32), (32, 36), (36, 40), (40, 46)]
     for milestone_index, (start, end) in enumerate(ranges):
         if start < changed_task <= end:
             states = []
