@@ -1,5 +1,6 @@
 use crate::policy::approval::{ActionFingerprint, ApprovalDecision, PendingAction};
 use crate::providers::types::{ProviderError, ProviderEvent};
+use crate::tools::propose_edit::ProposedEdit;
 use crossterm::event::KeyEvent;
 
 /// Input and internal messages that can change application state.
@@ -20,6 +21,7 @@ pub enum AppEvent {
         fingerprint: ActionFingerprint,
         decision: ApprovalDecision,
     },
+    EditProposed(ProposedEdit),
     Cancel,
     Interrupt,
     Quit,

@@ -3,6 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use super::event::AppEvent;
 use crate::policy::approval::{ApprovalDecision, ApprovalState};
 use crate::providers::types::ProviderEvent;
+use crate::tools::propose_edit::ProposedEdit;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Screen {
@@ -55,6 +56,7 @@ pub struct AppState {
     pub status: Status,
     pub approval: ApprovalState,
     pub approval_focus: ApprovalFocus,
+    pub pending_edit: Option<ProposedEdit>,
     pub transcript_scroll: u16,
     pub should_exit: bool,
     pub cancel_requested: bool,
@@ -132,7 +134,11 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         } => {
             if state.approval.decide(fingerprint, decision).is_ok() {
                 state.screen = Screen::Conversation;
+                state.pending_edit = None;
             }
+        }
+        AppEvent::EditProposed(edit) => {
+            state.pending_edit = Some(edit);
         }
         AppEvent::Cancel => {
             if state.screen == Screen::Approval {
@@ -172,6 +178,7 @@ fn resolve_approval(state: &mut AppState, decision: ApprovalDecision) {
     };
     if state.approval.decide(fingerprint, decision).is_ok() {
         state.screen = Screen::Conversation;
+        state.pending_edit = None;
     }
 }
 
