@@ -22,8 +22,8 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 3 — Streaming and agent loop | 14–20 | Complete |
 | 4 — Workspace context and read-only tools | 21–26 | Complete |
 | 5 — Approval and side-effecting tools | 27–32 | Complete |
-| 6 — Sessions and robust recovery | 33–36 | In progress |
-| 7 — Product usability and release | 37–40 | Not started |
+| 6 — Sessions and robust recovery | 33–36 | Complete |
+| 7 — Product usability and release | 37–40 | In progress |
 | 8 — Performance evidence and stack comparison | 41–46 | Not started |
 
 ## Ticket ledger
@@ -67,12 +67,10 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 33 | [#33](https://github.com/paramcodes/ben/issues/33) | Complete | [PR #79](https://github.com/paramcodes/ben/pull/79) — merged 2026-10-04 |
 | 34 | [#34](https://github.com/paramcodes/ben/issues/34) | Complete | [PR #80](https://github.com/paramcodes/ben/pull/80) — merged 2026-10-04 |
 | 35 | [#35](https://github.com/paramcodes/ben/issues/35) | Complete | [PR #81](https://github.com/paramcodes/ben/pull/81) — merged 2026-10-04 |
-| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | In progress | Branch `task/36-shutdown-consistency` — fix: make shutdown cleanup reliable; 11 tests passing |
-| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | Merged PR #83: feat summarize agent work and errors |
-| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | In progress | Branch `task/36-shutdown-consistency` — feat: improve terminal accessibility; 10 new tests passing |
-| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Open | |
-| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Open | |
-| 39 | [#39](https://github.com/paramcodes/ben/issues/39) | Open | |
+| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Complete | Merged PR #82: fix shutdown cleanup reliability; 11 tests passing |
+| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | Merged PR #82: feat summarize agent work and errors; 12 tests passing |
+| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Complete | Merged PR #82: feat improve terminal accessibility; 10 tests passing |
+| 39 | [#39](https://github.com/paramcodes/ben/issues/39) | In progress | Branch `task/39-docs` — docs: explain setup and learning path |
 | 40 | [#40](https://github.com/paramcodes/ben/issues/40) | Open | |
 | 41 | [#41](https://github.com/paramcodes/ben/issues/41) | Open | |
 | 42 | [#42](https://github.com/paramcodes/ben/issues/42) | Open | |
@@ -120,3 +118,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #79](https://github.com/paramcodes/ben/pull/79) | 33 | Merged 2026-10-04 | feat: define versioned session format |
 | [PR #80](https://github.com/paramcodes/ben/pull/80) | 34 | Merged 2026-10-04 | Task 34: Persist and recover sessions |
 | [PR #81](https://github.com/paramcodes/ben/pull/81) | 35 | Merged 2026-10-04 | Task 35: Add resume/list/clear CLI flows |
+| [PR #82](https://github.com/paramcodes/ben/pull/82) | 36–38 | Merged 2026-10-04 | fix shutdown cleanup; feat summarize agent work; feat improve terminal accessibility |
