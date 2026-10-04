@@ -17,6 +17,7 @@ pub fn render_transcript(frame: &mut Frame<'_>, area: Rect, state: &AppState) {
                 Speaker::User => ("You", Color::Green),
                 Speaker::Assistant => ("Agent", Color::Cyan),
                 Speaker::Tool => ("Tool", Color::Yellow),
+                Speaker::System => ("ben", Color::Magenta),
             };
             entry
                 .text

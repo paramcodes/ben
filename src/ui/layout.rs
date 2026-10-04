@@ -8,12 +8,16 @@ use ratatui::{
 
 use crate::app::update::{AppState, Screen};
 
-use super::{approval, conversation, status};
+use super::{approval, clear, conversation, status};
 
 pub fn render(frame: &mut Frame<'_>, state: &AppState) {
     let area = frame.area();
     if state.screen == Screen::Approval {
         approval::render(frame, area, state);
+        return;
+    }
+    if state.screen == Screen::ConfirmClear {
+        clear::render(frame, area, state.clear_prompt.as_ref());
         return;
     }
     let compact = area.width < 60 || area.height < 16;

@@ -33,6 +33,8 @@ pub enum SessionStoreError {
     Write { id: String, source: std::io::Error },
     #[error("session {id} could not be read: {source}")]
     Read { id: String, source: std::io::Error },
+    #[error("session {id} could not be cleared: {source}")]
+    Delete { id: String, source: std::io::Error },
     #[error("session {id} was not found in {path}")]
     NotFound { id: String, path: PathBuf },
     #[error("session {id} is damaged and cannot be read; remove {path} to start a new session")]
@@ -108,6 +110,69 @@ impl SessionStore {
             })?;
         record.validate()?;
         Ok(record)
+    }
+
+    /// Sorted session ids in the store. A directory that does not exist yet
+    /// lists as empty rather than failing, so a first run is not an error.
+    /// Damaged files are still listed: their ids are what a user needs in order
+    /// to clear them.
+    pub fn list_ids(&self) -> Result<Vec<String>, SessionStoreError> {
+        let entries = match fs::read_dir(&self.root) {
+            Ok(entries) => entries,
+            Err(source) if source.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(source) => {
+                return Err(SessionStoreError::Root {
+                    path: self.root.clone(),
+                    source,
+                });
+            }
+        };
+
+        let mut ids = Vec::new();
+        for entry in entries {
+            let entry = entry.map_err(|source| SessionStoreError::Read {
+                id: self.root.to_string_lossy().into_owned(),
+                source,
+            })?;
+            let path = entry.path();
+            let is_session_file = path
+                .extension()
+                .is_some_and(|extension| extension == SESSION_EXTENSION);
+            let is_session_id = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .is_some_and(is_safe_id);
+            if is_session_file && is_session_id {
+                let Some(id) = path.file_stem().and_then(|stem| stem.to_str()) else {
+                    continue;
+                };
+                ids.push(id.to_owned());
+            }
+        }
+        ids.sort_unstable();
+        Ok(ids)
+    }
+
+    /// Whether a session is stored under this id. A damaged file still counts
+    /// as present, because clearing it is the documented recovery path.
+    pub fn exists(&self, id: &str) -> Result<bool, SessionStoreError> {
+        Ok(self.path_for(id)?.is_file())
+    }
+
+    /// Removes one stored session. A missing id reports its path so the user
+    /// can see whether the session was already cleared.
+    pub fn delete(&self, id: &str) -> Result<(), SessionStoreError> {
+        let path = self.path_for(id)?;
+        fs::remove_file(&path).map_err(|source| match source.kind() {
+            std::io::ErrorKind::NotFound => SessionStoreError::NotFound {
+                id: id.to_owned(),
+                path,
+            },
+            _ => SessionStoreError::Delete {
+                id: id.to_owned(),
+                source,
+            },
+        })
     }
 
     fn write_record<F>(&self, id: &str, write: F) -> Result<PathBuf, SessionStoreError>
@@ -429,5 +494,85 @@ mod tests {
 
         assert_eq!(store.root(), dir.path().join("sessions"));
         assert!(dir.path().join("sessions").join("session-1.json").exists());
+    }
+
+    #[test]
+    fn listing_reports_sorted_ids_and_ignores_unrelated_files() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        store.save(&record("beta")).unwrap();
+        store.save(&record("alpha")).unwrap();
+        fs::write(dir.path().join("notes.txt"), "unrelated").unwrap();
+        fs::write(dir.path().join(".alpha.json.1.tmp"), "debris").unwrap();
+
+        assert_eq!(store.list_ids().unwrap(), ["alpha", "beta"]);
+    }
+
+    #[test]
+    fn listing_an_absent_directory_is_empty_rather_than_an_error() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path().join("never-created"));
+
+        assert_eq!(store.list_ids().unwrap(), Vec::<String>::new());
+    }
+
+    #[test]
+    fn listing_includes_a_damaged_session_so_it_can_be_cleared() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        store.save(&record("broken")).unwrap();
+        fs::write(dir.path().join("broken.json"), "{\"version\":1").unwrap();
+
+        assert_eq!(store.list_ids().unwrap(), ["broken"]);
+        assert!(
+            matches!(store.load("broken"), Err(SessionStoreError::Corrupt { .. })),
+            "the damaged session is listed but not loadable"
+        );
+    }
+
+    #[test]
+    fn clearing_removes_the_file_and_a_second_clear_reports_it_missing() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        store.save(&record("session-1")).unwrap();
+
+        store.delete("session-1").unwrap();
+
+        assert!(!dir.path().join("session-1.json").exists());
+        assert_eq!(store.list_ids().unwrap(), Vec::<String>::new());
+        assert!(matches!(
+            store.delete("session-1"),
+            Err(SessionStoreError::NotFound { .. })
+        ));
+    }
+
+    #[test]
+    fn a_damaged_session_can_still_be_cleared() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        store.save(&record("broken")).unwrap();
+        fs::write(dir.path().join("broken.json"), "{\"version\":1").unwrap();
+
+        assert!(store.exists("broken").unwrap());
+        store.delete("broken").unwrap();
+        assert!(!store.exists("broken").unwrap());
+    }
+
+    #[test]
+    fn existence_and_clearing_refuse_ids_that_are_not_safe_file_names() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+
+        for id in ["../escape", "nested/id", "", "  "] {
+            assert!(
+                matches!(store.exists(id), Err(SessionStoreError::InvalidId)),
+                "id {id:?} must be refused by exists"
+            );
+            assert!(
+                matches!(store.delete(id), Err(SessionStoreError::InvalidId)),
+                "id {id:?} must be refused by delete"
+            );
+        }
+        assert!(!dir.path().join("escape.json").exists());
     }
 }
