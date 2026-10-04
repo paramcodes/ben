@@ -3,6 +3,7 @@ pub enum MessageRole {
     System,
     User,
     Assistant,
+    ToolCall,
     Tool,
 }
 
@@ -24,6 +25,8 @@ pub struct Message {
     pub role: MessageRole,
     pub content: String,
     pub tool_call_id: Option<ToolCallId>,
+    pub tool_name: Option<String>,
+    pub tool_arguments: Option<String>,
 }
 
 impl Message {
@@ -43,6 +46,20 @@ impl Message {
         Self::new(MessageRole::Tool, content, Some(call_id))
     }
 
+    pub fn assistant_tool_call(
+        call_id: ToolCallId,
+        name: impl Into<String>,
+        arguments: impl Into<String>,
+    ) -> Self {
+        Self {
+            role: MessageRole::ToolCall,
+            content: String::new(),
+            tool_call_id: Some(call_id),
+            tool_name: Some(name.into()),
+            tool_arguments: Some(arguments.into()),
+        }
+    }
+
     fn new(
         role: MessageRole,
         content: impl Into<String>,
@@ -52,6 +69,8 @@ impl Message {
             role,
             content: content.into(),
             tool_call_id,
+            tool_name: None,
+            tool_arguments: None,
         }
     }
 }

@@ -9,6 +9,8 @@ use crate::{
 pub enum RequestMappingError {
     #[error("tool result is missing its call identity")]
     MissingToolCallId,
+    #[error("assistant tool call is incomplete")]
+    InvalidToolCallMessage,
     #[error("request could not be serialized")]
     Serialization(#[from] serde_json::Error),
 }
@@ -38,6 +40,13 @@ enum InputItem {
         call_id: String,
         output: String,
     },
+    FunctionCall {
+        #[serde(rename = "type")]
+        item_type: &'static str,
+        call_id: String,
+        name: String,
+        arguments: String,
+    },
 }
 
 #[derive(Serialize)]
@@ -63,6 +72,24 @@ pub fn map_request(request: &ProviderRequest) -> Result<serde_json::Value, Reque
                 role: "assistant",
                 content: message.content.clone(),
             }),
+            MessageRole::ToolCall => {
+                let call_id = message
+                    .tool_call_id
+                    .as_ref()
+                    .ok_or(RequestMappingError::InvalidToolCallMessage)?;
+                input.push(InputItem::FunctionCall {
+                    item_type: "function_call",
+                    call_id: call_id.as_str().to_owned(),
+                    name: message
+                        .tool_name
+                        .clone()
+                        .ok_or(RequestMappingError::InvalidToolCallMessage)?,
+                    arguments: message
+                        .tool_arguments
+                        .clone()
+                        .ok_or(RequestMappingError::InvalidToolCallMessage)?,
+                });
+            }
             MessageRole::Tool => {
                 let call_id = message
                     .tool_call_id
@@ -212,6 +239,43 @@ mod tests {
                 "call_id": "call-1",
                 "output": "file contents"
             }])
+        );
+    }
+
+    #[test]
+    fn maps_assistant_tool_calls_with_the_original_call_id() {
+        let request = request(
+            vec![
+                Message::assistant_tool_call(
+                    crate::agent::message::ToolCallId::new("call-7"),
+                    "read_file",
+                    r#"{"path":"src/main.rs"}"#,
+                ),
+                Message::tool_result(
+                    crate::agent::message::ToolCallId::new("call-7"),
+                    "file contents",
+                ),
+            ],
+            vec![],
+        );
+
+        let mapped = map_request(&request).unwrap();
+
+        assert_eq!(
+            mapped["input"],
+            json!([
+                {
+                    "type": "function_call",
+                    "call_id": "call-7",
+                    "name": "read_file",
+                    "arguments": r#"{"path":"src/main.rs"}"#
+                },
+                {
+                    "type": "function_call_output",
+                    "call_id": "call-7",
+                    "output": "file contents"
+                }
+            ])
         );
     }
 

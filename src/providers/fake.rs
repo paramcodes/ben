@@ -14,7 +14,9 @@ use super::types::{
 
 /// Deterministic provider for local tests and scripted agent scenarios.
 pub struct FakeProvider {
-    events: Vec<Result<ProviderEvent, ProviderError>>,
+    responses: Vec<Vec<Result<ProviderEvent, ProviderError>>>,
+    repeat_last_response: bool,
+    response_index: Arc<Mutex<usize>>,
     delay: Duration,
     requests: Arc<Mutex<Vec<ProviderRequest>>>,
 }
@@ -26,8 +28,21 @@ impl FakeProvider {
 
     pub fn with_delay(events: Vec<Result<ProviderEvent, ProviderError>>, delay: Duration) -> Self {
         Self {
-            events,
+            responses: vec![events],
+            repeat_last_response: true,
+            response_index: Arc::new(Mutex::new(0)),
             delay,
+            requests: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// Returns one scripted event sequence per provider request.
+    pub fn with_responses(responses: Vec<Vec<Result<ProviderEvent, ProviderError>>>) -> Self {
+        Self {
+            responses,
+            repeat_last_response: false,
+            response_index: Arc::new(Mutex::new(0)),
+            delay: Duration::ZERO,
             requests: Arc::new(Mutex::new(Vec::new())),
         }
     }
@@ -50,8 +65,27 @@ impl Provider for FakeProvider {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .push(request);
+        let response_number = {
+            let mut index = self
+                .response_index
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            let number = *index;
+            *index = index.saturating_add(1);
+            number
+        };
+        let events = self
+            .responses
+            .get(response_number)
+            .or_else(|| {
+                self.repeat_last_response
+                    .then(|| self.responses.last())
+                    .flatten()
+            })
+            .cloned()
+            .unwrap_or_default();
         let state = FakeStreamState {
-            events: self.events.clone().into(),
+            events: events.into(),
             delay: self.delay,
             cancellation,
             finished: false,
