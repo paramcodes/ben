@@ -1,3 +1,4 @@
+use crate::policy::approval::{ActionFingerprint, ApprovalDecision, PendingAction};
 use crate::providers::types::{ProviderError, ProviderEvent};
 use crossterm::event::KeyEvent;
 
@@ -14,6 +15,11 @@ pub enum AppEvent {
     ProviderEvent(ProviderEvent),
     ProviderFailed(ProviderError),
     ProviderCancelled,
+    ApprovalRequested(PendingAction),
+    ApprovalDecision {
+        fingerprint: ActionFingerprint,
+        decision: ApprovalDecision,
+    },
     Cancel,
     Interrupt,
     Quit,
