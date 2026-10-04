@@ -1,0 +1,24 @@
+# Configuration for `cargo release`.
+
+[package]
+# Version bump settings: use semantic versioning.
+version = "0.1.0"
+
+[git]
+# Sign commits and tag releases with the version.
+sign-tag = false
+tag-name = "{{version}}"
+
+[release]
+# Publish to crates.io after tagging (not needed for a CLI binary).
+publish = false
+# Build release archives after tagging.
+sign-commit = false
+
+[target.'cfg(unix)']
+# Create tar.gz archives on Unix runners.
+archive-format = "tar.gz"
+
+[target.'cfg(windows)']
+# Create zip archives on Windows runners.
+archive-format = "zip"
