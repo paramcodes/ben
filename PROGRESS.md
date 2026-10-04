@@ -67,9 +67,9 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 33 | [#33](https://github.com/paramcodes/ben/issues/33) | Complete | [PR #79](https://github.com/paramcodes/ben/pull/79) — merged 2026-10-04 |
 | 34 | [#34](https://github.com/paramcodes/ben/issues/34) | Complete | [PR #80](https://github.com/paramcodes/ben/pull/80) — merged 2026-10-04 |
 | 35 | [#35](https://github.com/paramcodes/ben/issues/35) | Complete | [PR #81](https://github.com/paramcodes/ben/pull/81) — merged 2026-10-04 |
-| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Complete | Merged PR #82: fix shutdown cleanup reliability; 11 tests passing |
-| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | Merged PR #82: feat summarize agent work and errors; 12 tests passing |
-| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Complete | Merged PR #82: feat improve terminal accessibility; 10 tests passing |
+| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Complete | PR #82 merged: fix shutdown cleanup reliability; 11 tests passing |
+| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | PR #82 merged: feat summarize agent work and errors; 12 tests passing |
+| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Complete | PR #82 merged: feat improve terminal accessibility; 10 tests passing |
 | 39 | [#39](https://github.com/paramcodes/ben/issues/39) | In progress | Branch `task/39-docs` — docs: explain setup and learning path |
 | 40 | [#40](https://github.com/paramcodes/ben/issues/40) | Open | |
 | 41 | [#41](https://github.com/paramcodes/ben/issues/41) | Open | |
