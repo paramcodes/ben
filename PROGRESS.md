@@ -23,8 +23,8 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 4 — Workspace context and read-only tools | 21–26 | Complete |
 | 5 — Approval and side-effecting tools | 27–32 | Complete |
 | 6 — Sessions and robust recovery | 33–36 | Complete |
-| 7 — Product usability and release | 37–40 | In progress |
-| 8 — Performance evidence and stack comparison | 41–46 | Not started |
+| 7 — Product usability and release | 37–40 | Complete |
+| 8 — Performance evidence and stack comparison | 41–46 | Complete |
 
 ## Ticket ledger
 
@@ -70,14 +70,14 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Complete | PR #82 merged: fix shutdown cleanup reliability; 11 tests passing |
 | 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | PR #82 merged: feat summarize agent work and errors; 12 tests passing |
 | 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Complete | PR #82 merged: feat improve terminal accessibility; 10 tests passing |
-| 39 | [#39](https://github.com/paramcodes/ben/issues/39) | In progress | Branch `task/39-docs` — docs: explain setup and learning path |
-| 40 | [#40](https://github.com/paramcodes/ben/issues/40) | In progress | Branch `task/36-shutdown-consistency` — build: package initial CLI releases |
-| 41 | [#41](https://github.com/paramcodes/ben/issues/41) | Open | |
-| 42 | [#42](https://github.com/paramcodes/ben/issues/42) | Open | |
-| 43 | [#43](https://github.com/paramcodes/ben/issues/43) | Open | |
-| 44 | [#44](https://github.com/paramcodes/ben/issues/44) | Open | |
-| 45 | [#45](https://github.com/paramcodes/ben/issues/45) | Open | |
-| 46 | [#46](https://github.com/paramcodes/ben/issues/46) | Open | |
+| 39 | [#39](https://github.com/paramcodes/ben/issues/39) | Complete | PR #83 merged: docs explain setup and learning path |
+| 40 | [#40](https://github.com/paramcodes/ben/issues/40) | Complete | PR #84 merged: build package initial CLI releases |
+| 41 | [#41](https://github.com/paramcodes/ben/issues/41) | Complete | PR #85 merged: bench define repeatable workload fixtures |
+| 42 | [#42](https://github.com/paramcodes/ben/issues/42) | Complete | PR #86 merged: bench measure Rust local workloads |
+| 43 | [#43](https://github.com/paramcodes/ben/issues/43) | Complete | PR #87 merged: bench add Go reference workloads |
+| 44 | [#44](https://github.com/paramcodes/ben/issues/44) | Complete | PR #88 merged: bench add TypeScript reference workloads |
+| 45 | [#45](https://github.com/paramcodes/ben/issues/45) | Complete | PR #89 merged: bench record local stack comparison |
+| 46 | [#46](https://github.com/paramcodes/ben/issues/46) | Complete | PR #90 merged: bench separate provider latency report |
 
 ## PR history
 
@@ -119,3 +119,11 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #80](https://github.com/paramcodes/ben/pull/80) | 34 | Merged 2026-10-04 | Task 34: Persist and recover sessions |
 | [PR #81](https://github.com/paramcodes/ben/pull/81) | 35 | Merged 2026-10-04 | Task 35: Add resume/list/clear CLI flows |
 | [PR #82](https://github.com/paramcodes/ben/pull/82) | 36–38 | Merged 2026-10-04 | fix shutdown cleanup; feat summarize agent work; feat improve terminal accessibility |
+| [PR #83](https://github.com/paramcodes/ben/pull/83) | 39 | Merged 2026-10-04 | docs: explain setup and learning path |
+| [PR #84](https://github.com/paramcodes/ben/pull/84) | 40 | Merged 2026-10-04 | build: package initial CLI releases |
+| [PR #85](https://github.com/paramcodes/ben/pull/85) | 41 | Merged 2026-10-04 | bench: define repeatable workload fixtures |
+| [PR #86](https://github.com/paramcodes/ben/pull/86) | 42 | Merged 2026-10-04 | bench: measure Rust local workloads |
+| [PR #87](https://github.com/paramcodes/ben/pull/87) | 43 | Merged 2026-10-04 | bench: add Go reference workloads |
+| [PR #88](https://github.com/paramcodes/ben/pull/88) | 44 | Merged 2026-10-04 | bench: add TypeScript reference workloads |
+| [PR #89](https://github.com/paramcodes/ben/pull/89) | 45 | Merged 2026-10-04 | bench: record local stack comparison |
+| [PR #90](https://github.com/paramcodes/ben/pull/90) | 46 | Merged 2026-10-04 | bench: separate provider latency report |
