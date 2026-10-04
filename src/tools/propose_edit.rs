@@ -3,9 +3,229 @@ use std::{fs::File, io::Read, path::Path};
 use serde::{Deserialize, Serialize};
 
 use crate::policy::{
-    approval::PendingAction,
+    approval::{ApprovalDecision, ApprovalResolution, PendingAction, content_digest},
     paths::{PathIntent, PathResolutionError, WorkspacePath},
 };
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ApplyEditResult {
+    pub path: String,
+}
+
+impl ApplyEditResult {
+    pub fn new(path: impl Into<String>) -> Self {
+        Self { path: path.into() }
+    }
+
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+}
+
+#[derive(Debug, thiserror::Error, Clone, PartialEq, Eq)]
+pub enum ApplyEditError {
+    #[error("edit was not approved")]
+    NotApproved,
+    #[error("target file has changed since the edit was proposed")]
+    StaleContent,
+    #[error("target is a symlink or resolves outside the workspace")]
+    SymlinkConflict,
+    #[error("target file is missing")]
+    MissingTarget,
+    #[error("approval action does not match proposed edit")]
+    ActionMismatch,
+    #[error("file content is not valid text")]
+    InvalidText,
+    #[error("target path is invalid or outside the workspace")]
+    InvalidPath,
+    #[error("io error while writing file: {0}")]
+    Io(String),
+}
+
+static TEMP_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+pub fn apply_edit(
+    root: impl AsRef<Path>,
+    proposal: &ProposedEdit,
+    resolution: &ApprovalResolution,
+) -> Result<ApplyEditResult, ApplyEditError> {
+    apply_edit_internal(root, proposal, resolution, |file, content| {
+        use std::io::Write;
+        file.write_all(content.as_bytes())
+            .map_err(|e| ApplyEditError::Io(e.to_string()))
+    })
+}
+
+#[cfg(test)]
+pub(crate) fn apply_edit_with_write_failure(
+    root: impl AsRef<Path>,
+    proposal: &ProposedEdit,
+    resolution: &ApprovalResolution,
+) -> Result<ApplyEditResult, ApplyEditError> {
+    apply_edit_internal(root, proposal, resolution, |_file, _content| {
+        Err(ApplyEditError::Io("simulated write error".into()))
+    })
+}
+
+fn apply_edit_internal<F>(
+    root: impl AsRef<Path>,
+    proposal: &ProposedEdit,
+    resolution: &ApprovalResolution,
+    write_fn: F,
+) -> Result<ApplyEditResult, ApplyEditError>
+where
+    F: FnOnce(&mut File, &str) -> Result<(), ApplyEditError>,
+{
+    if resolution.decision != ApprovalDecision::ApproveOnce {
+        return Err(ApplyEditError::NotApproved);
+    }
+    if resolution.action != proposal.pending_action {
+        return Err(ApplyEditError::ActionMismatch);
+    }
+    if resolution.action.tool() != "propose_edit" {
+        return Err(ApplyEditError::ActionMismatch);
+    }
+
+    let arguments = resolution
+        .action
+        .arguments()
+        .as_object()
+        .ok_or(ApplyEditError::ActionMismatch)?;
+    let path_arg = arguments
+        .get("path")
+        .and_then(serde_json::Value::as_str)
+        .ok_or(ApplyEditError::ActionMismatch)?;
+    let expected_content = arguments
+        .get("expected_content")
+        .and_then(serde_json::Value::as_str)
+        .ok_or(ApplyEditError::ActionMismatch)?;
+    let new_content = arguments
+        .get("new_content")
+        .and_then(serde_json::Value::as_str)
+        .ok_or(ApplyEditError::ActionMismatch)?;
+
+    let expected_digest = content_digest(new_content);
+    if let Some(recorded_digest) = resolution.action.content_digest()
+        && recorded_digest != expected_digest
+    {
+        return Err(ApplyEditError::ActionMismatch);
+    }
+
+    let root_path = root.as_ref();
+    let candidate_path = root_path.join(path_arg);
+
+    if std::fs::symlink_metadata(&candidate_path).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(ApplyEditError::SymlinkConflict);
+    }
+
+    let intent = if expected_content.is_empty() {
+        PathIntent::Create
+    } else {
+        PathIntent::Existing
+    };
+
+    let resolved =
+        WorkspacePath::resolve(root_path, path_arg, intent).map_err(map_apply_path_error)?;
+
+    if std::fs::symlink_metadata(resolved.path()).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(ApplyEditError::SymlinkConflict);
+    }
+
+    if expected_content.is_empty() {
+        if resolved.path().exists() {
+            return Err(ApplyEditError::StaleContent);
+        }
+    } else {
+        if !resolved.path().exists() {
+            return Err(ApplyEditError::MissingTarget);
+        }
+        let current_text =
+            read_workspace_text(resolved.path(), usize::MAX / 2).map_err(|err| match err {
+                ProposeEditError::MissingTarget => ApplyEditError::MissingTarget,
+                ProposeEditError::InvalidText => ApplyEditError::InvalidText,
+                _ => ApplyEditError::Io("failed to read target file".into()),
+            })?;
+        if current_text != expected_content {
+            return Err(ApplyEditError::StaleContent);
+        }
+    }
+
+    let target_path = resolved.path();
+    let parent = target_path.parent().ok_or(ApplyEditError::InvalidPath)?;
+    if !parent.exists() {
+        std::fs::create_dir_all(parent).map_err(|e| ApplyEditError::Io(e.to_string()))?;
+    }
+
+    let file_name = target_path
+        .file_name()
+        .map(|n| n.to_string_lossy())
+        .unwrap_or_else(|| "ben_edit".into());
+    let pid = std::process::id();
+
+    let mut created = None;
+    for _ in 0..100 {
+        let count = TEMP_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let temp_path = parent.join(format!(".{file_name}.tmp.{pid}.{count}"));
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temp_path)
+        {
+            Ok(file) => {
+                created = Some((temp_path, file));
+                break;
+            }
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(err) => return Err(ApplyEditError::Io(err.to_string())),
+        }
+    }
+
+    let (temp_path, mut temp_file) = created
+        .ok_or_else(|| ApplyEditError::Io("failed to create temporary sibling file".into()))?;
+
+    struct TempGuard<'a>(&'a Path, bool);
+    impl Drop for TempGuard<'_> {
+        fn drop(&mut self) {
+            if self.1 {
+                let _ = std::fs::remove_file(self.0);
+            }
+        }
+    }
+
+    let mut guard = TempGuard(&temp_path, true);
+
+    write_fn(&mut temp_file, new_content)?;
+    temp_file
+        .sync_all()
+        .map_err(|e| ApplyEditError::Io(e.to_string()))?;
+    drop(temp_file);
+
+    if std::fs::symlink_metadata(target_path).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(ApplyEditError::SymlinkConflict);
+    }
+
+    std::fs::rename(&temp_path, target_path).map_err(|e| ApplyEditError::Io(e.to_string()))?;
+    guard.1 = false;
+
+    if let Ok(dir) = File::open(parent) {
+        let _ = dir.sync_all();
+    }
+
+    let relative = relative_path(&resolved).map_err(|_| ApplyEditError::InvalidPath)?;
+    Ok(ApplyEditResult { path: relative })
+}
+
+fn map_apply_path_error(err: PathResolutionError) -> ApplyEditError {
+    match err {
+        PathResolutionError::NotFound => ApplyEditError::MissingTarget,
+        PathResolutionError::OutsideWorkspace => ApplyEditError::SymlinkConflict,
+        PathResolutionError::AbsolutePath
+        | PathResolutionError::Traversal
+        | PathResolutionError::NotDirectory
+        | PathResolutionError::WorkspaceUnavailable
+        | PathResolutionError::Io => ApplyEditError::InvalidPath,
+    }
+}
 
 const DEFAULT_CONTEXT_LINES: usize = 3;
 
@@ -68,12 +288,14 @@ pub fn propose_edit(
         return Err(ProposeEditError::DiffTooLarge);
     }
 
+    let digest = content_digest(&input.new_content);
     let pending_action = PendingAction::new(
         "propose_edit",
         serde_json::json!({
             "path": relative_path,
             "expected_content": input.expected_content,
             "new_content": input.new_content,
+            "content_digest": digest,
         }),
     )
     .map_err(|_| ProposeEditError::InvalidInput)?;
@@ -324,7 +546,11 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::{ProposeEditError, ProposeEditInput, propose_edit, unified_diff};
+    use super::{
+        ApplyEditError, ProposeEditError, ProposeEditInput, apply_edit,
+        apply_edit_with_write_failure, propose_edit, unified_diff,
+    };
+    use crate::policy::approval::{ApprovalDecision, ApprovalState};
 
     fn workspace_with(content: &str) -> (tempfile::TempDir, String) {
         let root = tempdir().unwrap();
@@ -487,5 +713,178 @@ mod tests {
             ),
             Err(ProposeEditError::TooLarge)
         );
+    }
+
+    #[test]
+    fn successful_apply_replaces_content_atomically_and_reports_path() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let proposal = propose_edit(
+            root.path(),
+            ProposeEditInput {
+                path: path.clone(),
+                expected_content: "alpha\nbeta\n".into(),
+                new_content: "alpha\nBETA\n".into(),
+            },
+            4_096,
+            4_096,
+        )
+        .unwrap();
+
+        let mut approval_state = ApprovalState::default();
+        let fingerprint = approval_state.request(proposal.pending_action.clone());
+        let resolution = approval_state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone();
+
+        let result = apply_edit(root.path(), &proposal, &resolution).unwrap();
+        assert_eq!(result.path, path);
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nBETA\n"
+        );
+    }
+
+    #[test]
+    fn rejected_or_cancelled_proposal_is_not_applied() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let proposal = propose_edit(
+            root.path(),
+            ProposeEditInput {
+                path: path.clone(),
+                expected_content: "alpha\nbeta\n".into(),
+                new_content: "alpha\nBETA\n".into(),
+            },
+            4_096,
+            4_096,
+        )
+        .unwrap();
+
+        for decision in [ApprovalDecision::Reject, ApprovalDecision::Cancel] {
+            let mut approval_state = ApprovalState::default();
+            let fingerprint = approval_state.request(proposal.pending_action.clone());
+            let resolution = approval_state
+                .decide(fingerprint, decision)
+                .unwrap()
+                .clone();
+
+            let err = apply_edit(root.path(), &proposal, &resolution).unwrap_err();
+            assert_eq!(err, ApplyEditError::NotApproved);
+            assert_eq!(
+                fs::read_to_string(root.path().join(&path)).unwrap(),
+                "alpha\nbeta\n"
+            );
+        }
+    }
+
+    #[test]
+    fn changed_file_conflict_is_rejected_without_overwriting() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let proposal = propose_edit(
+            root.path(),
+            ProposeEditInput {
+                path: path.clone(),
+                expected_content: "alpha\nbeta\n".into(),
+                new_content: "alpha\nBETA\n".into(),
+            },
+            4_096,
+            4_096,
+        )
+        .unwrap();
+
+        let mut approval_state = ApprovalState::default();
+        let fingerprint = approval_state.request(proposal.pending_action.clone());
+        let resolution = approval_state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone();
+
+        // Simulate concurrent modification before apply:
+        fs::write(root.path().join(&path), "alpha\nmodified\n").unwrap();
+
+        let err = apply_edit(root.path(), &proposal, &resolution).unwrap_err();
+        assert_eq!(err, ApplyEditError::StaleContent);
+        // Original modified content is preserved:
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nmodified\n"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlink_swap_is_rejected() {
+        use std::os::unix::fs::symlink;
+
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let outside = tempdir().unwrap();
+        let outside_file = outside.path().join("secret.txt");
+        fs::write(&outside_file, "secret content").unwrap();
+
+        let proposal = propose_edit(
+            root.path(),
+            ProposeEditInput {
+                path: path.clone(),
+                expected_content: "alpha\nbeta\n".into(),
+                new_content: "alpha\nBETA\n".into(),
+            },
+            4_096,
+            4_096,
+        )
+        .unwrap();
+
+        let mut approval_state = ApprovalState::default();
+        let fingerprint = approval_state.request(proposal.pending_action.clone());
+        let resolution = approval_state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone();
+
+        // Swap the target file with a symlink pointing outside the workspace:
+        fs::remove_file(root.path().join(&path)).unwrap();
+        symlink(&outside_file, root.path().join(&path)).unwrap();
+
+        let err = apply_edit(root.path(), &proposal, &resolution).unwrap_err();
+        assert_eq!(err, ApplyEditError::SymlinkConflict);
+        assert_eq!(fs::read_to_string(&outside_file).unwrap(), "secret content");
+    }
+
+    #[test]
+    fn cleanup_after_simulated_write_error_leaves_target_unchanged_and_removes_temp_file() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let proposal = propose_edit(
+            root.path(),
+            ProposeEditInput {
+                path: path.clone(),
+                expected_content: "alpha\nbeta\n".into(),
+                new_content: "alpha\nBETA\n".into(),
+            },
+            4_096,
+            4_096,
+        )
+        .unwrap();
+
+        let mut approval_state = ApprovalState::default();
+        let fingerprint = approval_state.request(proposal.pending_action.clone());
+        let resolution = approval_state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone();
+
+        let err = apply_edit_with_write_failure(root.path(), &proposal, &resolution).unwrap_err();
+        assert!(matches!(err, ApplyEditError::Io(_)));
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nbeta\n"
+        );
+
+        // Verify no sibling temporary files were left behind in the directory:
+        let parent = root.path().join("src");
+        let entries: Vec<_> = fs::read_dir(parent)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(entries, vec!["demo.rs"]);
     }
 }

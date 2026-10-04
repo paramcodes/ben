@@ -11,11 +11,28 @@ pub struct PendingAction {
     arguments: Value,
 }
 
+pub fn content_digest(content: &str) -> String {
+    let mut hasher = DefaultHasher::new();
+    hasher.write(b"ben-content-digest-v1");
+    hasher.write(content.as_bytes());
+    format!("{:016x}", hasher.finish())
+}
+
 impl PendingAction {
-    pub fn new(tool: impl Into<String>, arguments: Value) -> Result<Self, ApprovalError> {
+    pub fn new(tool: impl Into<String>, mut arguments: Value) -> Result<Self, ApprovalError> {
         let tool = tool.into().trim().to_owned();
         if tool.is_empty() || !arguments.is_object() {
             return Err(ApprovalError::InvalidAction);
+        }
+        if tool == "propose_edit"
+            && let Some(object) = arguments.as_object_mut()
+            && !object.contains_key("content_digest")
+            && let Some(new_content) = object.get("new_content").and_then(Value::as_str)
+        {
+            object.insert(
+                "content_digest".to_string(),
+                Value::String(content_digest(new_content)),
+            );
         }
         Ok(Self {
             tool,
@@ -29,6 +46,21 @@ impl PendingAction {
 
     pub fn arguments(&self) -> &Value {
         &self.arguments
+    }
+
+    pub fn target(&self) -> Option<&str> {
+        self.arguments
+            .get("path")
+            .or_else(|| self.arguments.get("target"))
+            .or_else(|| self.arguments.get("cwd"))
+            .or_else(|| self.arguments.get("working_dir"))
+            .or_else(|| self.arguments.get("working_directory"))
+            .or_else(|| self.arguments.get("directory"))
+            .and_then(Value::as_str)
+    }
+
+    pub fn content_digest(&self) -> Option<&str> {
+        self.arguments.get("content_digest").and_then(Value::as_str)
     }
 
     pub fn fingerprint(&self) -> ActionFingerprint {
@@ -299,5 +331,43 @@ mod tests {
             state.decide(first, ApprovalDecision::ApproveOnce),
             Err(ApprovalError::StaleAction)
         );
+    }
+
+    #[test]
+    fn edit_target_and_content_digest_invalidate_prior_approval() {
+        let first = PendingAction::new(
+            "propose_edit",
+            serde_json::json!({
+                "path": "src/main.rs",
+                "new_content": "fn main() {}\n",
+            }),
+        )
+        .unwrap();
+        assert_eq!(first.target(), Some("src/main.rs"));
+        assert_eq!(
+            first.content_digest(),
+            Some(super::content_digest("fn main() {}\n").as_str())
+        );
+
+        let different_path = PendingAction::new(
+            "propose_edit",
+            serde_json::json!({
+                "path": "src/lib.rs",
+                "new_content": "fn main() {}\n",
+            }),
+        )
+        .unwrap();
+
+        let different_content = PendingAction::new(
+            "propose_edit",
+            serde_json::json!({
+                "path": "src/main.rs",
+                "new_content": "fn main() { println!(); }\n",
+            }),
+        )
+        .unwrap();
+
+        assert_ne!(first.fingerprint(), different_path.fingerprint());
+        assert_ne!(first.fingerprint(), different_content.fingerprint());
     }
 }
