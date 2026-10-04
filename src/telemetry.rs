@@ -1,3 +1,4 @@
+use std::time::Instant;
 use thiserror::Error;
 use tracing_subscriber::EnvFilter;
 
@@ -5,6 +6,27 @@ use tracing_subscriber::EnvFilter;
 pub enum TelemetryError {
     #[error("a global tracing subscriber is already installed")]
     SubscriberAlreadyInstalled,
+}
+
+/// Monotonic clock for benchmark time boundaries.
+#[derive(Debug, Clone)]
+#[expect(dead_code)]
+pub struct Stopwatch {
+    start: Instant,
+}
+
+impl Stopwatch {
+    #[expect(dead_code)]
+    pub fn start() -> Self {
+        Self {
+            start: Instant::now(),
+        }
+    }
+
+    #[expect(dead_code)]
+    pub fn elapsed(&self) -> std::time::Duration {
+        self.start.elapsed()
+    }
 }
 
 pub fn initialize() -> Result<(), TelemetryError> {

@@ -1,0 +1,2208 @@
+{
+  "schema_version": 1,
+  "description": "Deterministic transcript fixture for benchmark reproducibility",
+  "message_count": 500,
+  "tool_row_count": 100,
+  "messages": [
+    {
+      "role": "tool",
+      "call_id": "call-0000",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0000 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0001: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0002: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0003: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0004: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0001",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0001 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0006: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0007: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0008: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0009: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0002",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0002 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0011: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0012: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0013: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0014: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0003",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0003 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0016: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0017: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0018: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0019: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0004",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0004 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0021: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0022: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0023: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0024: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0005",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0005 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0026: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0027: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0028: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0029: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0006",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0006 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0031: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0032: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0033: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0034: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0007",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0007 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0036: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0037: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0038: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0039: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0008",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0008 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0041: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0042: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0043: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0044: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0009",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0009 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0046: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0047: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0048: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0049: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0010",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0010 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0051: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0052: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0053: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0054: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0011",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0011 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0056: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0057: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0058: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0059: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0012",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0012 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0061: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0062: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0063: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0064: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0013",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0013 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0066: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0067: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0068: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0069: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0014",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0014 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0071: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0072: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0073: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0074: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0015",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0015 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0076: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0077: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0078: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0079: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0016",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0016 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0081: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0082: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0083: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0084: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0017",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0017 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0086: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0087: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0088: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0089: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0018",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0018 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0091: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0092: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0093: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0094: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0019",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0019 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0096: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0097: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0098: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0099: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0020",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0020 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0101: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0102: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0103: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0104: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0021",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0021 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0106: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0107: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0108: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0109: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0022",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0022 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0111: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0112: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0113: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0114: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0023",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0023 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0116: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0117: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0118: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0119: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0024",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0024 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0121: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0122: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0123: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0124: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0025",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0025 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0126: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0127: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0128: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0129: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0026",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0026 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0131: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0132: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0133: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0134: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0027",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0027 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0136: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0137: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0138: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0139: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0028",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0028 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0141: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0142: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0143: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0144: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0029",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0029 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0146: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0147: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0148: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0149: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0030",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0030 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0151: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0152: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0153: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0154: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0031",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0031 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0156: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0157: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0158: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0159: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0032",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0032 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0161: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0162: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0163: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0164: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0033",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0033 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0166: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0167: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0168: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0169: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0034",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0034 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0171: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0172: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0173: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0174: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0035",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0035 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0176: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0177: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0178: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0179: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0036",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0036 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0181: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0182: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0183: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0184: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0037",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0037 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0186: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0187: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0188: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0189: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0038",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0038 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0191: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0192: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0193: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0194: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0039",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0039 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0196: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0197: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0198: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0199: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0040",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0040 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0201: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0202: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0203: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0204: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0041",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0041 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0206: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0207: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0208: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0209: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0042",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0042 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0211: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0212: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0213: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0214: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0043",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0043 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0216: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0217: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0218: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0219: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0044",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0044 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0221: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0222: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0223: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0224: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0045",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0045 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0226: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0227: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0228: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0229: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0046",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0046 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0231: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0232: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0233: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0234: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0047",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0047 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0236: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0237: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0238: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0239: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0048",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0048 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0241: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0242: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0243: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0244: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0049",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0049 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0246: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0247: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0248: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0249: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0050",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0050 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0251: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0252: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0253: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0254: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0051",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0051 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0256: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0257: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0258: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0259: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0052",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0052 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0261: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0262: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0263: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0264: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0053",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0053 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0266: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0267: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0268: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0269: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0054",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0054 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0271: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0272: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0273: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0274: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0055",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0055 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0276: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0277: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0278: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0279: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0056",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0056 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0281: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0282: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0283: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0284: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0057",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0057 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0286: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0287: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0288: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0289: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0058",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0058 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0291: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0292: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0293: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0294: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0059",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0059 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0296: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0297: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0298: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0299: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0060",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0060 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0301: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0302: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0303: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0304: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0061",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0061 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0306: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0307: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0308: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0309: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0062",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0062 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0311: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0312: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0313: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0314: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0063",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0063 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0316: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0317: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0318: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0319: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0064",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0064 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0321: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0322: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0323: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0324: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0065",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0065 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0326: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0327: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0328: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0329: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0066",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0066 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0331: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0332: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0333: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0334: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0067",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0067 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0336: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0337: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0338: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0339: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0068",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0068 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0341: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0342: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0343: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0344: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0069",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0069 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0346: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0347: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0348: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0349: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0070",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0070 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0351: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0352: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0353: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0354: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0071",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0071 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0356: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0357: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0358: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0359: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0072",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0072 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0361: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0362: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0363: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0364: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0073",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0073 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0366: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0367: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0368: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0369: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0074",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0074 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0371: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0372: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0373: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0374: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0075",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0075 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0376: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0377: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0378: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0379: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0076",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0076 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0381: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0382: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0383: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0384: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0077",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0077 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0386: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0387: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0388: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0389: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0078",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0078 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0391: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0392: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0393: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0394: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0079",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0079 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0396: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0397: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0398: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0399: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0080",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0080 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0401: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0402: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0403: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0404: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0081",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0081 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0406: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0407: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0408: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0409: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0082",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0082 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0411: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0412: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0413: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0414: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0083",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0083 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0416: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0417: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0418: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0419: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0084",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0084 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0421: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0422: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0423: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0424: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0085",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0085 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0426: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0427: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0428: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0429: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0086",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0086 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0431: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0432: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0433: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0434: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0087",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0087 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0436: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0437: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0438: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0439: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0088",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0088 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0441: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0442: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0443: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0444: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0089",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0089 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0446: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0447: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0448: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0449: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0090",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0090 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0451: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0452: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0453: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0454: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0091",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0091 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0456: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0457: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0458: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0459: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0092",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0092 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0461: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0462: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0463: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0464: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0093",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0093 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0466: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0467: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0468: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0469: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0094",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0094 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0471: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0472: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0473: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0474: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0095",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0095 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0476: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0477: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0478: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0479: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0096",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0096 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0481: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0482: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0483: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0484: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0097",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0097 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0486: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0487: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0488: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0489: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0098",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0098 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0491: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0492: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0493: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0494: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "tool",
+      "call_id": "call-0099",
+      "tool": "read_file",
+      "content": "fixture content for tool row 0099 \u2014 deterministic data used for benchmark fixtures"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0496: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0497: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "user",
+      "content": "Benchmark fixture message 0498: deterministic content for reproducible measurements"
+    },
+    {
+      "role": "assistant",
+      "content": "Benchmark fixture message 0499: deterministic content for reproducible measurements"
+    }
+  ]
+}
