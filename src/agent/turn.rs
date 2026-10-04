@@ -7,6 +7,10 @@ use tokio_util::sync::CancellationToken;
 use crate::{
     agent::{limits::AgentLimits, message::Message},
     app::event::AppEvent,
+    context::{
+        budget::{BoundedContext, ContextItem, TokenEstimator, assemble_workspace_context},
+        instructions::{InstructionError, load_instructions},
+    },
     providers::retry::{RetryCheckpoint, RetryPolicy, RetryingProvider},
     providers::types::{
         CompletionReason, Provider, ProviderError, ProviderEvent, ProviderRequest,
@@ -35,6 +39,7 @@ pub struct Agent {
     history: Vec<Message>,
     turns_started: usize,
     side_effect_checkpoint: bool,
+    context: Option<BoundedContext>,
 }
 
 impl Agent {
@@ -52,11 +57,33 @@ impl Agent {
             history: Vec::new(),
             turns_started: 0,
             side_effect_checkpoint: false,
+            context: None,
         }
     }
 
     pub fn history(&self) -> &[Message] {
         &self.history
+    }
+
+    /// Adds already bounded repository context to each provider request.
+    pub fn set_context(&mut self, context: BoundedContext) {
+        self.context = (!context.content.is_empty()).then_some(context);
+    }
+
+    /// Loads repository instructions, combines caller-selected task context, and applies a budget.
+    pub fn load_workspace_context(
+        &mut self,
+        workspace_root: impl AsRef<std::path::Path>,
+        current_path: impl AsRef<std::path::Path>,
+        relevant_context: &[ContextItem],
+        token_budget: usize,
+        estimator: &dyn TokenEstimator,
+    ) -> Result<BoundedContext, InstructionError> {
+        let instructions = load_instructions(workspace_root, current_path)?;
+        let context =
+            assemble_workspace_context(&instructions, relevant_context, token_budget, estimator);
+        self.context = Some(context.clone());
+        Ok(context)
     }
 
     /// Marks that an external action completed during this turn.
@@ -75,12 +102,15 @@ impl Agent {
         }
         self.turns_started += 1;
         let user_message = Message::user(user_message);
-        let request_messages = if self.limits.max_history_messages == 0 {
+        let mut request_messages = if self.limits.max_history_messages == 0 {
             vec![user_message]
         } else {
             self.push_history(user_message);
             self.history.clone()
         };
+        if let Some(context) = &self.context {
+            request_messages.insert(0, Message::system(context.content.clone()));
+        }
         let request = ProviderRequest {
             model: self.model.clone(),
             messages: request_messages,
@@ -174,15 +204,16 @@ impl Agent {
 
 #[cfg(test)]
 mod tests {
-    use std::{sync::Arc, time::Duration};
+    use std::{fs, sync::Arc, time::Duration};
 
     use tokio::sync::mpsc;
     use tokio_util::sync::CancellationToken;
 
     use super::{Agent, StopReason};
     use crate::{
-        agent::limits::AgentLimits,
+        agent::{limits::AgentLimits, message::MessageRole},
         app::event::AppEvent,
+        context::budget::{BoundedContext, ByteFallbackEstimator, ContextItem},
         providers::{
             fake::FakeProvider,
             types::{CompletionReason, ProviderError, ProviderEvent},
@@ -221,6 +252,65 @@ mod tests {
             matches!(receiver.recv().await, Some(Ok(AppEvent::ProviderEvent(ProviderEvent::TextDelta(text)))) if text == "answer")
         );
         assert_eq!(provider.requests()[0].model, "test-model");
+    }
+
+    #[tokio::test]
+    async fn repository_context_is_sent_as_system_message_without_entering_history() {
+        let provider = Arc::new(FakeProvider::new(vec![Ok(ProviderEvent::Completed(
+            CompletionReason::EndTurn,
+        ))]));
+        let mut agent = Agent::new(provider.clone(), "test-model", Vec::new(), limits(2, 3));
+        agent.set_context(BoundedContext {
+            content: "Repository instructions\nBudget notice: omitted README.md".into(),
+            ..BoundedContext::default()
+        });
+        let (sender, _receiver) = mpsc::channel(8);
+
+        let _ = agent
+            .run_turn("question", CancellationToken::new(), sender)
+            .await;
+
+        let messages = &provider.requests()[0].messages;
+        assert_eq!(messages[0].role, MessageRole::System);
+        assert!(messages[0].content.contains("omitted README.md"));
+        assert_eq!(messages[1].role, MessageRole::User);
+        assert_eq!(agent.history().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn loads_workspace_instructions_and_task_context_under_a_budget() {
+        let root = tempfile::tempdir().unwrap();
+        fs::write(
+            root.path().join("AGENTS.md"),
+            "Keep edits within the workspace.",
+        )
+        .unwrap();
+        let provider = Arc::new(FakeProvider::new(vec![Ok(ProviderEvent::Completed(
+            CompletionReason::EndTurn,
+        ))]));
+        let mut agent = Agent::new(provider.clone(), "test-model", Vec::new(), limits(2, 3));
+        let context = agent
+            .load_workspace_context(
+                root.path(),
+                ".",
+                &[ContextItem {
+                    source: "Current task".into(),
+                    content: "Inspect src/lib.rs".into(),
+                }],
+                10_000,
+                &ByteFallbackEstimator,
+            )
+            .unwrap();
+        assert_eq!(context.included_sources.len(), 2);
+        let (sender, _receiver) = mpsc::channel(8);
+        let _ = agent
+            .run_turn("question", CancellationToken::new(), sender)
+            .await;
+
+        let system = &provider.requests()[0].messages[0];
+        assert_eq!(system.role, MessageRole::System);
+        assert!(system.content.contains("Keep edits within the workspace."));
+        assert!(system.content.contains("Inspect src/lib.rs"));
     }
 
     #[tokio::test]
