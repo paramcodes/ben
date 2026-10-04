@@ -62,6 +62,40 @@ impl ToolRegistry {
             .await
             .map_err(ToolRegistryError::Execution)
     }
+
+    /// Executes a request, verifies its call identity, and caps the returned content bytes.
+    pub async fn execute_bounded(
+        &self,
+        request: ToolRequest,
+        max_output_bytes: usize,
+    ) -> Result<ToolResult, ToolRegistryError> {
+        let expected_call_id = request.call_id.clone();
+        let mut result = self.execute(request).await?;
+        if result.call_id != expected_call_id {
+            return Err(ToolExecutionError::Failed.into());
+        }
+        result.content = truncate_output(&result.content, max_output_bytes);
+        Ok(result)
+    }
+}
+
+fn truncate_output(content: &str, max_bytes: usize) -> String {
+    if content.len() <= max_bytes {
+        return content.to_owned();
+    }
+    const MARKER: &str = "[truncated]";
+    if max_bytes <= MARKER.len() {
+        let mut boundary = max_bytes.min(MARKER.len());
+        while !MARKER.is_char_boundary(boundary) {
+            boundary -= 1;
+        }
+        return MARKER[..boundary].to_owned();
+    }
+    let mut boundary = max_bytes - MARKER.len();
+    while !content.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    format!("{}{}", &content[..boundary], MARKER)
 }
 
 #[cfg(test)]
