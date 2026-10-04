@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use super::event::AppEvent;
-use crate::policy::approval::ApprovalState;
+use crate::policy::approval::{ApprovalDecision, ApprovalState};
 use crate::providers::types::ProviderEvent;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -9,6 +9,14 @@ pub enum Screen {
     #[default]
     Conversation,
     Approval,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ApprovalFocus {
+    ApproveOnce,
+    Reject,
+    #[default]
+    Cancel,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -46,6 +54,7 @@ pub struct AppState {
     pub transcript: Vec<TranscriptEntry>,
     pub status: Status,
     pub approval: ApprovalState,
+    pub approval_focus: ApprovalFocus,
     pub transcript_scroll: u16,
     pub should_exit: bool,
     pub cancel_requested: bool,
@@ -54,9 +63,17 @@ pub struct AppState {
 /// Apply one event to state. This function performs no terminal I/O.
 pub fn update(mut state: AppState, event: AppEvent) -> AppState {
     match event {
-        AppEvent::Key(key) => update_key(&mut state, key),
+        AppEvent::Key(key) => {
+            if state.screen == Screen::Approval {
+                update_approval_key(&mut state, key);
+            } else {
+                update_key(&mut state, key);
+            }
+        }
         AppEvent::Submit => {
-            if is_busy(&state.status) {
+            if state.screen == Screen::Approval {
+                decide_focused_approval(&mut state);
+            } else if is_busy(&state.status) {
                 state.status = Status::Busy;
             } else {
                 submit(&mut state);
@@ -107,6 +124,7 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         AppEvent::ApprovalRequested(action) => {
             state.approval.request(action);
             state.screen = Screen::Approval;
+            state.approval_focus = ApprovalFocus::Cancel;
         }
         AppEvent::ApprovalDecision {
             fingerprint,
@@ -117,7 +135,9 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
             }
         }
         AppEvent::Cancel => {
-            if is_busy(&state.status) {
+            if state.screen == Screen::Approval {
+                resolve_approval(&mut state, ApprovalDecision::Cancel);
+            } else if is_busy(&state.status) {
                 state.cancel_requested = true;
             }
         }
@@ -140,6 +160,54 @@ fn is_busy(status: &Status) -> bool {
         status,
         Status::Working | Status::Connecting | Status::Streaming | Status::Busy
     )
+}
+
+fn resolve_approval(state: &mut AppState, decision: ApprovalDecision) {
+    let Some(fingerprint) = state
+        .approval
+        .pending()
+        .map(|pending| pending.fingerprint())
+    else {
+        return;
+    };
+    if state.approval.decide(fingerprint, decision).is_ok() {
+        state.screen = Screen::Conversation;
+    }
+}
+
+fn decide_focused_approval(state: &mut AppState) {
+    let decision = match state.approval_focus {
+        ApprovalFocus::ApproveOnce => ApprovalDecision::ApproveOnce,
+        ApprovalFocus::Reject => ApprovalDecision::Reject,
+        ApprovalFocus::Cancel => ApprovalDecision::Cancel,
+    };
+    resolve_approval(state, decision);
+}
+
+fn update_approval_key(state: &mut AppState, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('a') => resolve_approval(state, ApprovalDecision::ApproveOnce),
+        KeyCode::Char('r') => resolve_approval(state, ApprovalDecision::Reject),
+        KeyCode::Char('c') | KeyCode::Esc => resolve_approval(state, ApprovalDecision::Cancel),
+        KeyCode::Left | KeyCode::Up => {
+            state.approval_focus = match state.approval_focus {
+                ApprovalFocus::ApproveOnce => ApprovalFocus::Cancel,
+                ApprovalFocus::Reject => ApprovalFocus::ApproveOnce,
+                ApprovalFocus::Cancel => ApprovalFocus::Reject,
+            };
+        }
+        KeyCode::Right | KeyCode::Down => {
+            state.approval_focus = match state.approval_focus {
+                ApprovalFocus::ApproveOnce => ApprovalFocus::Reject,
+                ApprovalFocus::Reject => ApprovalFocus::Cancel,
+                ApprovalFocus::Cancel => ApprovalFocus::ApproveOnce,
+            };
+        }
+        KeyCode::Home => state.approval_focus = ApprovalFocus::ApproveOnce,
+        KeyCode::End => state.approval_focus = ApprovalFocus::Cancel,
+        KeyCode::Enter => decide_focused_approval(state),
+        _ => {}
+    }
 }
 
 fn update_key(state: &mut AppState, key: KeyEvent) {
@@ -208,7 +276,7 @@ mod tests {
     use crate::{
         app::{
             event::AppEvent,
-            update::{AppState, Speaker, Status, TranscriptEntry},
+            update::{AppState, ApprovalFocus, Speaker, Status, TranscriptEntry},
         },
         policy::approval::{ApprovalDecision, PendingAction},
         providers::types::{ProviderError, ProviderEvent},
@@ -304,6 +372,53 @@ mod tests {
         assert_eq!(
             state.approval.resolution().unwrap().decision,
             ApprovalDecision::ApproveOnce
+        );
+    }
+
+    #[test]
+    fn approval_shortcuts_choose_each_one_shot_decision() {
+        for (key, expected) in [
+            ('a', ApprovalDecision::ApproveOnce),
+            ('r', ApprovalDecision::Reject),
+            ('c', ApprovalDecision::Cancel),
+        ] {
+            let action =
+                PendingAction::new("run_command", serde_json::json!({"command":"cargo test"}))
+                    .unwrap();
+            let state = update(AppState::default(), AppEvent::ApprovalRequested(action));
+            let state = update(
+                state,
+                AppEvent::Key(KeyEvent::new(KeyCode::Char(key), KeyModifiers::NONE)),
+            );
+            assert_eq!(state.approval.resolution().unwrap().decision, expected);
+            assert_eq!(state.screen, super::Screen::Conversation);
+        }
+    }
+
+    #[test]
+    fn approval_enter_defaults_to_cancel_and_focus_can_move_to_reject() {
+        let action =
+            PendingAction::new("run_command", serde_json::json!({"command":"cargo test"})).unwrap();
+        let state = update(AppState::default(), AppEvent::ApprovalRequested(action));
+        assert_eq!(state.approval_focus, ApprovalFocus::Cancel);
+        let state = update(state, AppEvent::Submit);
+        assert_eq!(
+            state.approval.resolution().unwrap().decision,
+            ApprovalDecision::Cancel
+        );
+
+        let action =
+            PendingAction::new("run_command", serde_json::json!({"command":"cargo test"})).unwrap();
+        let state = update(AppState::default(), AppEvent::ApprovalRequested(action));
+        let state = update(
+            state,
+            AppEvent::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::NONE)),
+        );
+        assert_eq!(state.approval_focus, ApprovalFocus::Reject);
+        let state = update(state, AppEvent::Submit);
+        assert_eq!(
+            state.approval.resolution().unwrap().decision,
+            ApprovalDecision::Reject
         );
     }
 
