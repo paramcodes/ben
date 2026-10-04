@@ -26,11 +26,12 @@ use crate::{
     agent::Agent,
     policy::approval::ApprovalResolution,
     providers::types::{Provider, ProviderError, ProviderRequest},
+    sessions::{SessionRecord, SessionStore},
 };
 
 use self::{
     event::{AppEvent, map_key},
-    update::{AppState, update},
+    update::{AppState, transcript_from_session, update},
 };
 
 struct InputShutdown(Arc<AtomicBool>);
@@ -41,13 +42,24 @@ impl Drop for InputShutdown {
     }
 }
 
-/// Starts the TUI runtime and returns after the user requests quit.
-pub fn run() -> io::Result<()> {
-    let runtime = Builder::new_multi_thread().enable_all().build()?;
-    runtime.block_on(run_loop())
+/// What the terminal should show when it starts.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Startup {
+    /// Begin an empty conversation.
+    New,
+    /// Load a stored conversation before the first frame.
+    Resume(SessionRecord),
+    /// Ask the user to confirm deleting a stored session, then exit.
+    Clear(String),
 }
 
-async fn run_loop() -> io::Result<()> {
+/// Starts the TUI runtime and returns after the user requests quit.
+pub fn run(store: SessionStore, startup: Startup) -> io::Result<()> {
+    let runtime = Builder::new_multi_thread().enable_all().build()?;
+    runtime.block_on(run_loop(store, startup))
+}
+
+async fn run_loop(store: SessionStore, startup: Startup) -> io::Result<()> {
     let backend = CrosstermBackend::new(io::stdout());
     let mut terminal = Terminal::new(backend)?;
     let (sender, mut receiver) = mpsc::channel::<io::Result<AppEvent>>(64);
@@ -80,7 +92,7 @@ async fn run_loop() -> io::Result<()> {
         }
     });
 
-    let mut state = AppState::default();
+    let mut state = initial_state(startup);
     let mut redraw = time::interval(Duration::from_millis(100));
     redraw.set_missed_tick_behavior(MissedTickBehavior::Skip);
     let mut dirty = true;
@@ -107,6 +119,14 @@ async fn run_loop() -> io::Result<()> {
             _ = redraw.tick() => dirty = true,
         }
 
+        if let Some(id) = state.cleared_session_id.take() {
+            stop_input.store(true, Ordering::Relaxed);
+            let _ = input_task.await;
+            delete_session(&store, &id)?;
+            terminal.show_cursor()?;
+            return Ok(());
+        }
+
         if state.should_exit {
             break;
         }
@@ -118,6 +138,29 @@ async fn run_loop() -> io::Result<()> {
         .map_err(|error| io::Error::other(format!("input task failed: {error}")))?;
     terminal.show_cursor()?;
     Ok(())
+}
+
+/// Builds the state the first frame renders: an empty conversation, a restored
+/// one, or a pending clear confirmation.
+fn initial_state(startup: Startup) -> AppState {
+    match startup {
+        Startup::New => AppState::default(),
+        Startup::Resume(record) => {
+            let entries = transcript_from_session(&record);
+            let mut state = update(AppState::default(), AppEvent::SessionRestored(entries));
+            state.resumed_session_id = Some(record.id);
+            state
+        }
+        Startup::Clear(id) => update(AppState::default(), AppEvent::ClearRequested { id }),
+    }
+}
+
+/// Removes a confirmed session, reporting a failure without leaving the
+/// terminal in raw mode.
+fn delete_session(store: &SessionStore, id: &str) -> io::Result<()> {
+    store
+        .delete(id)
+        .map_err(|error| io::Error::other(format!("session could not be cleared: {error}")))
 }
 
 /// Runs provider streaming away from the TUI loop and forwards typed events to it.
@@ -200,7 +243,9 @@ mod tests {
     use futures_util::stream;
 
     use super::update::{AppState, Screen, update};
-    use super::{ApprovalBridge, mpsc, spawn_provider_stream};
+    use super::{
+        ApprovalBridge, Startup, delete_session, initial_state, mpsc, spawn_provider_stream,
+    };
     use crate::{
         agent::{
             Agent, StopReason,
@@ -216,9 +261,107 @@ mod tests {
                 ProviderStream, ToolCall,
             },
         },
+        sessions::{SessionRecord, SessionStore, SessionStoreError, model::SessionMessage},
         tools::{Tool, ToolExecutionError, ToolMetadata, ToolRegistry, ToolRequest, ToolResult},
     };
+    use tempfile::tempdir;
     use tokio_util::sync::CancellationToken;
+
+    fn saved_record(id: &str) -> SessionRecord {
+        SessionRecord::new(
+            id,
+            "test-model",
+            1_700_000_000_000,
+            vec![
+                SessionMessage::User {
+                    text: "update the notes".into(),
+                },
+                SessionMessage::Assistant {
+                    text: "updated notes.txt".into(),
+                },
+            ],
+            Vec::new(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn a_new_session_starts_with_an_empty_conversation() {
+        let state = initial_state(Startup::New);
+
+        assert!(state.transcript.is_empty());
+        assert!(state.clear_prompt.is_none());
+        assert!(state.resumed_session_id.is_none());
+    }
+
+    #[test]
+    fn resuming_shows_the_saved_conversation_before_the_first_frame() {
+        let state = initial_state(Startup::Resume(saved_record("session-1")));
+
+        assert_eq!(state.transcript.len(), 2);
+        assert_eq!(state.transcript[0].text, "update the notes");
+        assert_eq!(state.transcript[1].text, "updated notes.txt");
+        assert_eq!(state.resumed_session_id.as_deref(), Some("session-1"));
+        assert_eq!(
+            state.screen,
+            super::update::Screen::Conversation,
+            "resuming must not open a confirmation prompt"
+        );
+    }
+
+    #[test]
+    fn clearing_opens_a_confirmation_for_the_requested_session() {
+        let state = initial_state(Startup::Clear("session-1".into()));
+
+        assert_eq!(state.screen, super::update::Screen::ConfirmClear);
+        assert_eq!(
+            state.clear_prompt.as_ref().map(|p| p.id.as_str()),
+            Some("session-1")
+        );
+        assert!(
+            state.cleared_session_id.is_none(),
+            "no session may be cleared before the user confirms"
+        );
+    }
+
+    #[test]
+    fn a_confirmed_clear_removes_only_the_confirmed_session() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        store.save(&saved_record("session-1")).unwrap();
+        store.save(&saved_record("session-2")).unwrap();
+
+        delete_session(&store, "session-1").unwrap();
+
+        assert_eq!(store.list_ids().unwrap(), ["session-2"]);
+    }
+
+    #[test]
+    fn clearing_reports_a_failure_instead_of_succeeding_silently() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+
+        let error = delete_session(&store, "absent").unwrap_err();
+
+        assert!(error.to_string().contains("absent"), "{error}");
+    }
+
+    #[test]
+    fn clearing_refuses_an_identifier_that_is_not_a_safe_file_name() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+
+        let error = delete_session(&store, "../escape").unwrap_err();
+
+        assert!(matches!(
+            store.load("../escape"),
+            Err(SessionStoreError::InvalidId)
+        ));
+        assert!(
+            error.to_string().contains("could not be cleared"),
+            "{error}"
+        );
+    }
 
     struct DelayedProvider;
 

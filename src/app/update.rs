@@ -3,6 +3,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use super::event::AppEvent;
 use crate::policy::approval::{ApprovalDecision, ApprovalState};
 use crate::providers::types::ProviderEvent;
+use crate::sessions::model::SessionMessage;
+use crate::sessions::model::SessionRecord;
 use crate::tools::propose_edit::ProposedEdit;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -10,6 +12,7 @@ pub enum Screen {
     #[default]
     Conversation,
     Approval,
+    ConfirmClear,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -31,6 +34,14 @@ pub enum Speaker {
 pub struct TranscriptEntry {
     pub speaker: Speaker,
     pub text: String,
+}
+
+/// A stored session the user is being asked to delete. The id travels with the
+/// decision so a stale confirmation cannot delete a different session.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClearPrompt {
+    pub id: String,
+    pub focused: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -60,6 +71,12 @@ pub struct AppState {
     pub transcript_scroll: u16,
     pub should_exit: bool,
     pub cancel_requested: bool,
+    /// The session whose deletion is awaiting confirmation, if any.
+    pub clear_prompt: Option<ClearPrompt>,
+    /// A session the user chose to restore, kept so it can be saved again.
+    pub resumed_session_id: Option<String>,
+    /// One-shot outcome of a clear confirmation, consumed by the caller.
+    pub cleared_session_id: Option<String>,
 }
 
 /// Apply one event to state. This function performs no terminal I/O.
@@ -68,6 +85,8 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         AppEvent::Key(key) => {
             if state.screen == Screen::Approval {
                 update_approval_key(&mut state, key);
+            } else if state.screen == Screen::ConfirmClear {
+                update_clear_key(&mut state, key);
             } else {
                 update_key(&mut state, key);
             }
@@ -75,6 +94,9 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         AppEvent::Submit => {
             if state.screen == Screen::Approval {
                 decide_focused_approval(&mut state);
+            } else if state.screen == Screen::ConfirmClear {
+                let focused = state.clear_prompt.as_ref().is_some_and(|p| p.focused);
+                resolve_clear(&mut state, focused);
             } else if is_busy(&state.status) {
                 state.status = Status::Busy;
             } else {
@@ -140,8 +162,37 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         AppEvent::EditProposed(edit) => {
             state.pending_edit = Some(edit);
         }
+        AppEvent::SessionRestored(entries) => {
+            state.transcript.extend(entries);
+            state.status = Status::Ready;
+        }
+        AppEvent::ClearRequested { id } => {
+            state.clear_prompt = Some(ClearPrompt { id, focused: false });
+            state.screen = Screen::ConfirmClear;
+        }
+        AppEvent::ClearResolved { id, confirmed } => {
+            if state
+                .clear_prompt
+                .as_ref()
+                .is_some_and(|prompt| prompt.id == id)
+            {
+                state.clear_prompt = None;
+                state.screen = Screen::Conversation;
+                state.status = Status::Ready;
+                if confirmed {
+                    state.cleared_session_id = Some(id);
+                } else {
+                    state.transcript.push(TranscriptEntry {
+                        speaker: Speaker::Assistant,
+                        text: format!("Kept session {id}."),
+                    });
+                }
+            }
+        }
         AppEvent::Cancel => {
-            if state.screen == Screen::Approval {
+            if state.screen == Screen::ConfirmClear {
+                cancel_clear(&mut state);
+            } else if state.screen == Screen::Approval {
                 resolve_approval(&mut state, ApprovalDecision::Cancel);
             } else if is_busy(&state.status) {
                 state.cancel_requested = true;
@@ -189,6 +240,69 @@ fn decide_focused_approval(state: &mut AppState) {
         ApprovalFocus::Cancel => ApprovalDecision::Cancel,
     };
     resolve_approval(state, decision);
+}
+
+/// Keys for the clear confirmation. Deletion is destructive, so the safe
+/// option is focused by default and Enter alone cannot delete a session.
+fn update_clear_key(state: &mut AppState, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('y') => resolve_clear(state, true),
+        KeyCode::Char('n') => resolve_clear(state, false),
+        KeyCode::Char('c') | KeyCode::Esc => cancel_clear(state),
+        KeyCode::Tab | KeyCode::BackTab | KeyCode::Left | KeyCode::Right => {
+            if let Some(prompt) = state.clear_prompt.as_mut() {
+                prompt.focused = !prompt.focused;
+            }
+        }
+        KeyCode::Enter => resolve_clear(
+            state,
+            state
+                .clear_prompt
+                .as_ref()
+                .is_some_and(|prompt| prompt.focused),
+        ),
+        _ => {}
+    }
+}
+
+fn resolve_clear(state: &mut AppState, confirmed: bool) {
+    let Some(id) = state.clear_prompt.as_ref().map(|prompt| prompt.id.clone()) else {
+        return;
+    };
+    *state = update(state.clone(), AppEvent::ClearResolved { id, confirmed });
+}
+
+fn cancel_clear(state: &mut AppState) {
+    resolve_clear(state, false);
+}
+
+/// Turns a stored conversation into transcript entries. Tool calls and results
+/// become tool lines so a resumed session reads in the original order.
+pub fn transcript_from_session(record: &SessionRecord) -> Vec<TranscriptEntry> {
+    record
+        .messages
+        .iter()
+        .map(|message| match message {
+            SessionMessage::User { text } => TranscriptEntry {
+                speaker: Speaker::User,
+                text: text.clone(),
+            },
+            SessionMessage::Assistant { text } => TranscriptEntry {
+                speaker: Speaker::Assistant,
+                text: text.clone(),
+            },
+            SessionMessage::ToolCall {
+                tool, arguments, ..
+            } => TranscriptEntry {
+                speaker: Speaker::Tool,
+                text: format!("{tool}({arguments})"),
+            },
+            SessionMessage::ToolResult { content, .. } => TranscriptEntry {
+                speaker: Speaker::Tool,
+                text: content.clone(),
+            },
+        })
+        .collect()
 }
 
 fn update_approval_key(state: &mut AppState, key: KeyEvent) {
@@ -283,12 +397,38 @@ mod tests {
     use crate::{
         app::{
             event::AppEvent,
-            update::{AppState, ApprovalFocus, Speaker, Status, TranscriptEntry},
+            update::{
+                AppState, ApprovalFocus, Screen, Speaker, Status, TranscriptEntry,
+                transcript_from_session,
+            },
         },
         policy::approval::{ApprovalDecision, PendingAction},
         providers::types::{ProviderError, ProviderEvent},
+        sessions::model::{SessionMessage, SessionRecord},
     };
     use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+
+    fn key(code: KeyCode) -> AppEvent {
+        AppEvent::Key(KeyEvent::new(code, KeyModifiers::NONE))
+    }
+
+    fn record() -> SessionRecord {
+        SessionRecord::new(
+            "session-1",
+            "test-model",
+            1_700_000_000_000,
+            vec![
+                SessionMessage::User {
+                    text: "update the notes".into(),
+                },
+                SessionMessage::Assistant {
+                    text: "updated notes.txt".into(),
+                },
+            ],
+            Vec::new(),
+        )
+        .unwrap()
+    }
 
     #[test]
     fn submit_moves_input_to_transcript_and_sets_working_status() {
@@ -612,5 +752,183 @@ mod tests {
 
         let state = update(AppState::default(), AppEvent::Interrupt);
         assert!(state.should_exit);
+    }
+
+    #[test]
+    fn a_stored_session_becomes_a_transcript_before_the_first_frame() {
+        let state = update(
+            AppState::default(),
+            AppEvent::SessionRestored(transcript_from_session(&record())),
+        );
+
+        assert_eq!(
+            state.transcript,
+            [
+                TranscriptEntry {
+                    speaker: Speaker::User,
+                    text: "update the notes".into()
+                },
+                TranscriptEntry {
+                    speaker: Speaker::Assistant,
+                    text: "updated notes.txt".into()
+                }
+            ]
+        );
+        assert_eq!(state.status, Status::Ready);
+        assert!(state.clear_prompt.is_none());
+    }
+
+    #[test]
+    fn tool_activity_is_restored_as_tool_lines_in_order() {
+        let record = SessionRecord::new(
+            "session-1",
+            "test-model",
+            1_700_000_000_000,
+            vec![
+                SessionMessage::ToolCall {
+                    call_id: "call-1".into(),
+                    tool: "read_file".into(),
+                    arguments: r#"{"path":"notes.txt"}"#.into(),
+                },
+                SessionMessage::ToolResult {
+                    call_id: "call-1".into(),
+                    content: "contents".into(),
+                },
+            ],
+            Vec::new(),
+        )
+        .unwrap();
+
+        let entries = transcript_from_session(&record);
+
+        assert_eq!(entries.len(), 2);
+        assert!(entries.iter().all(|entry| entry.speaker == Speaker::Tool));
+        assert!(
+            entries[0].text.starts_with("read_file("),
+            "{}",
+            entries[0].text
+        );
+        assert_eq!(entries[1].text, "contents");
+    }
+
+    #[test]
+    fn clearing_a_session_requires_a_confirmation_and_default_is_the_safe_choice() {
+        let state = update(
+            AppState::default(),
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        assert_eq!(state.screen, Screen::ConfirmClear);
+        let prompt = state.clear_prompt.as_ref().expect("a prompt is pending");
+        assert_eq!(prompt.id, "session-1");
+        assert!(!prompt.focused, "deletion must not be the focused default");
+        assert!(state.cleared_session_id.is_none());
+
+        let state = update(state, AppEvent::Submit);
+        assert_eq!(
+            state.cleared_session_id, None,
+            "Enter alone must not delete a session"
+        );
+        assert_eq!(state.screen, Screen::Conversation);
+    }
+
+    #[test]
+    fn confirming_a_clear_reports_the_session_once() {
+        let state = update(
+            AppState::default(),
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        let state = update(state, key(KeyCode::Char('y')));
+
+        assert_eq!(state.cleared_session_id.as_deref(), Some("session-1"));
+        assert!(state.clear_prompt.is_none());
+        assert_eq!(state.screen, Screen::Conversation);
+    }
+
+    #[test]
+    fn rejecting_a_clear_keeps_the_session_and_says_so() {
+        let state = update(
+            AppState::default(),
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        let state = update(state, key(KeyCode::Char('n')));
+
+        assert_eq!(state.cleared_session_id, None);
+        assert!(state.clear_prompt.is_none());
+        assert!(
+            state
+                .transcript
+                .iter()
+                .any(|entry| entry.text.contains("Kept session session-1")),
+            "{:?}",
+            state.transcript
+        );
+    }
+
+    #[test]
+    fn escape_cancels_a_clear_without_deleting() {
+        let state = update(
+            AppState::default(),
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        let state = update(state, AppEvent::Cancel);
+
+        assert_eq!(state.cleared_session_id, None);
+        assert!(state.clear_prompt.is_none());
+    }
+
+    #[test]
+    fn a_stale_confirmation_cannot_delete_a_different_session() {
+        let state = update(
+            AppState::default(),
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        let state = update(
+            state,
+            AppEvent::ClearResolved {
+                id: "session-2".into(),
+                confirmed: true,
+            },
+        );
+
+        assert_eq!(state.cleared_session_id, None);
+        assert!(
+            state.clear_prompt.is_some(),
+            "a mismatched id must not clear the pending prompt"
+        );
+    }
+
+    #[test]
+    fn the_clear_prompt_does_not_swallow_conversation_keystrokes_after_resolving() {
+        let state = update(
+            AppState {
+                input: "ab".into(),
+                input_cursor: 2,
+                ..AppState::default()
+            },
+            AppEvent::ClearRequested {
+                id: "session-1".into(),
+            },
+        );
+
+        let state = update(state, key(KeyCode::Char('n')));
+        let state = update(state, key(KeyCode::Char('c')));
+
+        assert_eq!(state.input, "abc");
+        assert_eq!(state.input_cursor, 3);
     }
 }

@@ -1,3 +1,4 @@
+use crate::app::update::TranscriptEntry;
 use crate::policy::approval::{ActionFingerprint, ApprovalDecision, PendingAction};
 use crate::providers::types::{ProviderError, ProviderEvent};
 use crate::tools::propose_edit::ProposedEdit;
@@ -22,6 +23,18 @@ pub enum AppEvent {
         decision: ApprovalDecision,
     },
     EditProposed(ProposedEdit),
+    /// The user asked to clear a stored session; the terminal must confirm it
+    /// before the file is removed.
+    ClearRequested {
+        id: String,
+    },
+    /// The user confirmed or rejected clearing a stored session.
+    ClearResolved {
+        id: String,
+        confirmed: bool,
+    },
+    /// The stored conversation was loaded before the first frame.
+    SessionRestored(Vec<TranscriptEntry>),
     Cancel,
     Interrupt,
     Quit,
