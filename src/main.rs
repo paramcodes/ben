@@ -124,7 +124,7 @@ fn run() -> Result<(), StartupError> {
     let startup = match options.session {
         SessionAction::New => Startup::New,
         SessionAction::List => {
-            list_sessions(&store);
+            list_sessions(&store)?;
             return Ok(());
         }
         SessionAction::Resume { id } => Startup::Resume(store.load(&id)?),
@@ -148,19 +148,14 @@ fn run() -> Result<(), StartupError> {
 
 /// Prints stored session identifiers without entering the alternate screen, so
 /// the output can be captured by other tools.
-fn list_sessions(store: &SessionStore) {
-    let ids = match store.list_ids() {
-        Ok(ids) => ids,
-        Err(error) => {
-            eprintln!("error: stored sessions could not be listed: {error}");
-            return;
-        }
-    };
+fn list_sessions(store: &SessionStore) -> Result<(), StartupError> {
+    let ids = store.list_ids()?;
     if ids.is_empty() {
         println!("No saved sessions.");
-        return;
+        return Ok(());
     }
     for id in ids {
         println!("{id}");
     }
+    Ok(())
 }

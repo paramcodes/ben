@@ -28,6 +28,8 @@ pub enum Speaker {
     User,
     Assistant,
     Tool,
+    /// A message the application itself produced, such as a session notice.
+    System,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -183,7 +185,7 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
                     state.cleared_session_id = Some(id);
                 } else {
                     state.transcript.push(TranscriptEntry {
-                        speaker: Speaker::Assistant,
+                        speaker: Speaker::System,
                         text: format!("Kept session {id}."),
                     });
                 }
@@ -863,13 +865,15 @@ mod tests {
 
         assert_eq!(state.cleared_session_id, None);
         assert!(state.clear_prompt.is_none());
-        assert!(
-            state
-                .transcript
-                .iter()
-                .any(|entry| entry.text.contains("Kept session session-1")),
-            "{:?}",
-            state.transcript
+        let notice = state
+            .transcript
+            .iter()
+            .find(|entry| entry.text.contains("Kept session session-1"))
+            .expect("rejecting should tell the user the session was kept");
+        assert_eq!(
+            notice.speaker,
+            Speaker::System,
+            "a session notice must not be attributed to the model"
         );
     }
 
