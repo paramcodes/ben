@@ -60,7 +60,9 @@ impl RunningCommand {
     }
 
     pub async fn terminate(&mut self) -> Result<(), std::io::Error> {
-        self.child.kill().await
+        self.child.start_kill()?;
+        let _ = self.child.wait().await;
+        Ok(())
     }
 
     pub async fn wait(mut self) -> Result<CommandOutput, RunCommandError> {
@@ -258,7 +260,7 @@ mod tests {
 
     use super::{RunCommandError, execute_command, run_command, spawn_command};
     use crate::policy::{
-        approval::{ApprovalDecision, ApprovalState},
+        approval::{ApprovalDecision, ApprovalState, PendingAction},
         commands::{CommandPolicy, CommandPolicyError, CommandRequest, ValidatedCommand},
     };
 
@@ -527,7 +529,6 @@ esac
         assert!(is_process_alive(pid));
 
         running.terminate().await.unwrap();
-        tokio::time::sleep(Duration::from_millis(50)).await;
         assert!(!is_process_alive(pid));
     }
 
@@ -561,6 +562,30 @@ esac
         match err {
             RunCommandError::Policy(CommandPolicyError::NotApproved) => {}
             other => panic!("expected NotApproved, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn run_command_rejects_file_as_cwd() {
+        let dir = tempdir().unwrap();
+        let file = dir.path().join("file.txt");
+        fs::write(&file, "contents").unwrap();
+
+        let req = CommandRequest::new(["ls"], "file.txt").unwrap();
+        let mut approval_state = ApprovalState::default();
+        let dummy_action = PendingAction::new("run_command", serde_json::json!({})).unwrap();
+        let fp = approval_state.request(dummy_action);
+        let resolution = approval_state
+            .decide(fp, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone();
+
+        let err = run_command(dir.path(), &req, &resolution)
+            .await
+            .unwrap_err();
+        match err {
+            RunCommandError::Policy(CommandPolicyError::InvalidCwd) => {}
+            other => panic!("expected InvalidCwd, got {other:?}"),
         }
     }
 }

@@ -55,7 +55,12 @@ pub fn format_argv_display(argv: &[impl AsRef<str>]) -> String {
             }) {
                 s.to_string()
             } else {
-                let escaped = s.replace('\\', "\\\\").replace('"', "\\\"");
+                let escaped = s
+                    .replace('\\', "\\\\")
+                    .replace('"', "\\\"")
+                    .replace('\n', "\\n")
+                    .replace('\r', "\\r")
+                    .replace('\t', "\\t");
                 format!("\"{escaped}\"")
             }
         })
@@ -146,19 +151,31 @@ impl CommandRequest {
 
         let display = self.normalized_display();
         let args = self.args().to_vec();
-        PendingAction::new(
-            "run_command",
-            serde_json::json!({
-                "command": display,
-                "argv": self.argv,
-                "args": args,
-                "cwd": relative,
-                "path": relative,
-                "timeout_ms": self.timeout.as_millis() as u64,
-                "max_output_bytes": self.max_output_bytes,
-            }),
-        )
-        .map_err(|_| CommandPolicyError::ActionMismatch)
+        let mut arguments = serde_json::json!({
+            "command": display,
+            "argv": self.argv,
+            "args": args,
+            "cwd": relative,
+            "path": relative,
+            "timeout_ms": self.timeout.as_millis() as u64,
+            "max_output_bytes": self.max_output_bytes,
+        });
+
+        if let Some(obj) = arguments.as_object_mut() {
+            if !self.env.is_empty() {
+                let env_map: serde_json::Map<String, serde_json::Value> = self
+                    .env
+                    .iter()
+                    .map(|(k, v)| (k.clone(), serde_json::Value::String(v.clone())))
+                    .collect();
+                obj.insert("env".to_string(), serde_json::Value::Object(env_map));
+            }
+            if self.clear_env {
+                obj.insert("clear_env".to_string(), serde_json::Value::Bool(true));
+            }
+        }
+
+        PendingAction::new("run_command", arguments).map_err(|_| CommandPolicyError::ActionMismatch)
     }
 }
 
@@ -280,12 +297,12 @@ impl CommandPolicy {
         }
 
         if let Some(argv_val) = args.get("argv").and_then(serde_json::Value::as_array) {
-            let parsed_argv: Vec<String> = argv_val
+            let parsed_argv: Option<Vec<String>> = argv_val
                 .iter()
-                .filter_map(serde_json::Value::as_str)
-                .map(String::from)
+                .map(serde_json::Value::as_str)
+                .map(|s| s.map(String::from))
                 .collect();
-            if parsed_argv != request.argv {
+            if parsed_argv.as_ref() != Some(&request.argv) {
                 return Ok(false);
             }
         } else if let Some(cmd_val) = args.get("command").and_then(serde_json::Value::as_str) {
@@ -295,12 +312,53 @@ impl CommandPolicy {
         } else {
             return Ok(false);
         }
+
+        if let Some(timeout_val) = args.get("timeout_ms").and_then(serde_json::Value::as_u64)
+            && timeout_val != request.timeout.as_millis() as u64
+        {
+            return Ok(false);
+        }
+
+        if let Some(max_output_val) = args
+            .get("max_output_bytes")
+            .and_then(serde_json::Value::as_u64)
+            && max_output_val as usize != request.max_output_bytes
+        {
+            return Ok(false);
+        }
+
+        if let Some(clear_env_val) = args.get("clear_env").and_then(serde_json::Value::as_bool)
+            && clear_env_val != request.clear_env
+        {
+            return Ok(false);
+        } else if request.clear_env && !args.contains_key("clear_env") {
+            return Ok(false);
+        }
+
+        if let Some(env_obj) = args.get("env").and_then(serde_json::Value::as_object) {
+            let mut parsed_env = HashMap::new();
+            for (k, v) in env_obj {
+                let Some(val_str) = v.as_str() else {
+                    return Ok(false);
+                };
+                parsed_env.insert(k.clone(), val_str.to_string());
+            }
+            if parsed_env != request.env {
+                return Ok(false);
+            }
+        } else if !request.env.is_empty() {
+            return Ok(false);
+        }
+
         Ok(true)
     }
 }
 
 fn resolve_cwd(root: &Path, cwd: &Path) -> Result<(WorkspacePath, String), CommandPolicyError> {
     let resolved = WorkspacePath::resolve(root, cwd, PathIntent::Existing)?;
+    if !resolved.path().is_dir() {
+        return Err(CommandPolicyError::InvalidCwd);
+    }
     let relative = resolved
         .path()
         .strip_prefix(resolved.root())
@@ -487,6 +545,106 @@ mod tests {
         assert_eq!(
             policy.to_pending_action(&missing_req),
             Err(CommandPolicyError::InvalidCwd)
+        );
+    }
+
+    #[test]
+    fn cwd_pointing_to_file_is_rejected() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("not_a_dir.txt");
+        fs::write(&file_path, "hello").unwrap();
+
+        let policy = CommandPolicy::new(dir.path());
+        let req = CommandRequest::new(["ls"], "not_a_dir.txt").unwrap();
+        assert_eq!(
+            policy.to_pending_action(&req),
+            Err(CommandPolicyError::InvalidCwd)
+        );
+    }
+
+    #[test]
+    fn cwd_symlink_escaping_workspace_is_rejected() {
+        let dir = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        let symlink_path = dir.path().join("link_to_outside");
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(outside.path(), &symlink_path).unwrap();
+
+        let policy = CommandPolicy::new(dir.path());
+        let req = CommandRequest::new(["ls"], "link_to_outside").unwrap();
+        #[cfg(unix)]
+        assert_eq!(
+            policy.to_pending_action(&req),
+            Err(CommandPolicyError::OutsideWorkspace)
+        );
+    }
+
+    #[test]
+    fn pending_action_includes_env_and_clear_env() {
+        let dir = tempdir().unwrap();
+        let policy = CommandPolicy::new(dir.path());
+        let req = CommandRequest::new(["ls"], ".")
+            .unwrap()
+            .with_env("CUSTOM_KEY", "custom_val")
+            .with_clear_env(true);
+
+        let action = policy.to_pending_action(&req).unwrap();
+        let args = action.arguments();
+        assert_eq!(args["env"]["CUSTOM_KEY"], "custom_val");
+        assert_eq!(args["clear_env"], true);
+    }
+
+    #[test]
+    fn action_mismatch_on_malformed_argv_or_modified_env() {
+        let dir = tempdir().unwrap();
+        let policy = CommandPolicy::new(dir.path());
+        let req = CommandRequest::new(["ls"], ".").unwrap();
+
+        let malformed_action = PendingAction::new(
+            "run_command",
+            serde_json::json!({
+                "command": "ls",
+                "argv": [123, "ls"],
+                "cwd": ".",
+                "path": ".",
+            }),
+        )
+        .unwrap();
+        let resolution = ApprovalResolution {
+            action: malformed_action,
+            decision: ApprovalDecision::ApproveOnce,
+        };
+        assert_eq!(
+            policy.authorize(&req, &resolution),
+            Err(CommandPolicyError::ActionMismatch)
+        );
+
+        let modified_env_action = PendingAction::new(
+            "run_command",
+            serde_json::json!({
+                "command": "ls",
+                "argv": ["ls"],
+                "cwd": ".",
+                "path": ".",
+                "env": { "EXTRA": "val" },
+            }),
+        )
+        .unwrap();
+        let resolution_env = ApprovalResolution {
+            action: modified_env_action,
+            decision: ApprovalDecision::ApproveOnce,
+        };
+        assert_eq!(
+            policy.authorize(&req, &resolution_env),
+            Err(CommandPolicyError::ActionMismatch)
+        );
+    }
+
+    #[test]
+    fn format_argv_display_escapes_control_characters() {
+        assert_eq!(
+            format_argv_display(&["echo", "line1\nline2\tline3\rline4"]),
+            "echo \"line1\\nline2\\tline3\\rline4\""
         );
     }
 }
