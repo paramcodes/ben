@@ -20,7 +20,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 1 — TUI shell and state | 5–8 | Complete |
 | 2 — Configuration and provider boundary | 9–13 | Complete |
 | 3 — Streaming and agent loop | 14–20 | Complete |
-| 4 — Workspace context and read-only tools | 21–26 | In progress |
+| 4 — Workspace context and read-only tools | 21–26 | Complete |
 | 5 — Approval and side-effecting tools | 27–32 | Not started |
 | 6 — Sessions and robust recovery | 33–36 | Not started |
 | 7 — Product usability and release | 37–40 | Not started |
@@ -57,7 +57,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 23 | [#23](https://github.com/paramcodes/ben/issues/23) | Complete | [PR #69](https://github.com/paramcodes/ben/pull/69) — merged 2026-10-04 |
 | 24 | [#24](https://github.com/paramcodes/ben/issues/24) | Complete | [PR #70](https://github.com/paramcodes/ben/pull/70) — merged 2026-10-04 |
 | 25 | [#25](https://github.com/paramcodes/ben/issues/25) | Complete | [PR #71](https://github.com/paramcodes/ben/pull/71) — merged 2026-10-04 |
-| 26 | [#26](https://github.com/paramcodes/ben/issues/26) | In progress | [#72](https://github.com/paramcodes/ben/pull/72) |
+| 26 | [#26](https://github.com/paramcodes/ben/issues/26) | Complete | [PR #72](https://github.com/paramcodes/ben/pull/72) — merged 2026-10-04 |
 | 27 | [#27](https://github.com/paramcodes/ben/issues/27) | Open | |
 | 28 | [#28](https://github.com/paramcodes/ben/issues/28) | Open | |
 | 29 | [#29](https://github.com/paramcodes/ben/issues/29) | Open | |
@@ -108,3 +108,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #69](https://github.com/paramcodes/ben/pull/69) | 23 | Merged 2026-10-04 | feat: add bounded workspace listing and search |
 | [PR #70](https://github.com/paramcodes/ben/pull/70) | 24 | Merged 2026-10-04 | feat: read bounded workspace files |
 | [PR #71](https://github.com/paramcodes/ben/pull/71) | 25 | Merged 2026-10-04 | feat: assemble bounded repository context |
+| [PR #72](https://github.com/paramcodes/ben/pull/72) | 26 | Merged 2026-10-04 | feat: execute read-only model tools |
