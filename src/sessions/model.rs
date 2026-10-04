@@ -295,6 +295,7 @@ mod tests {
         let mut values = HashMap::new();
         values.insert("OPENAI_API_KEY".to_owned(), sentinel.to_owned());
         values.insert("BEN_MODEL".to_owned(), "test-model".to_owned());
+        values.insert("BEN_DATA_DIR".to_owned(), "/srv/ben-data".to_owned());
         let config = Config::from_values(&values, None).unwrap();
 
         let saved = SessionRecord::new(
