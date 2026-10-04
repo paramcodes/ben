@@ -5,6 +5,7 @@ pub mod config;
 pub mod context;
 pub mod policy;
 pub mod providers;
+pub mod sessions;
 mod telemetry;
 pub mod tools;
 pub mod ui;
