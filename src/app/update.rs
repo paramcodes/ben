@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use super::event::AppEvent;
+use crate::policy::approval::ApprovalState;
 use crate::providers::types::ProviderEvent;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -37,11 +38,6 @@ pub enum Status {
     Cancelled,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PendingApproval {
-    pub description: String,
-}
-
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct AppState {
     pub screen: Screen,
@@ -49,7 +45,7 @@ pub struct AppState {
     pub input_cursor: usize,
     pub transcript: Vec<TranscriptEntry>,
     pub status: Status,
-    pub pending_approval: Option<PendingApproval>,
+    pub approval: ApprovalState,
     pub transcript_scroll: u16,
     pub should_exit: bool,
     pub cancel_requested: bool,
@@ -107,6 +103,18 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         AppEvent::ProviderCancelled => {
             state.status = Status::Cancelled;
             state.cancel_requested = false;
+        }
+        AppEvent::ApprovalRequested(action) => {
+            state.approval.request(action);
+            state.screen = Screen::Approval;
+        }
+        AppEvent::ApprovalDecision {
+            fingerprint,
+            decision,
+        } => {
+            if state.approval.decide(fingerprint, decision).is_ok() {
+                state.screen = Screen::Conversation;
+            }
         }
         AppEvent::Cancel => {
             if is_busy(&state.status) {
@@ -202,6 +210,7 @@ mod tests {
             event::AppEvent,
             update::{AppState, Speaker, Status, TranscriptEntry},
         },
+        policy::approval::{ApprovalDecision, PendingAction},
         providers::types::{ProviderError, ProviderEvent},
     };
     use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -246,6 +255,56 @@ mod tests {
         let state = update(AppState::default(), AppEvent::Quit);
 
         assert!(state.should_exit);
+    }
+
+    #[test]
+    fn stale_approval_decisions_do_not_apply_to_changed_actions() {
+        let first =
+            PendingAction::new("run_command", serde_json::json!({"command":"cargo test"})).unwrap();
+        let changed =
+            PendingAction::new("run_command", serde_json::json!({"command":"cargo check"}))
+                .unwrap();
+        let mut state = update(AppState::default(), AppEvent::ApprovalRequested(first));
+        let stale = state.approval.pending().unwrap().fingerprint();
+        state = update(state, AppEvent::ApprovalRequested(changed.clone()));
+        let current = state.approval.pending().unwrap().fingerprint();
+        assert_ne!(stale, current);
+
+        state = update(
+            state,
+            AppEvent::ApprovalDecision {
+                fingerprint: stale,
+                decision: ApprovalDecision::ApproveOnce,
+            },
+        );
+
+        assert_eq!(state.screen, super::Screen::Approval);
+        assert_eq!(state.approval.pending().unwrap().action(), &changed);
+        assert!(state.approval.resolution().is_none());
+    }
+
+    #[test]
+    fn approval_decision_is_consumed_once_by_the_reducer() {
+        let action =
+            PendingAction::new("run_command", serde_json::json!({"command":"cargo test"})).unwrap();
+        let mut state = update(AppState::default(), AppEvent::ApprovalRequested(action));
+        let fingerprint = state.approval.pending().unwrap().fingerprint();
+        let decision = AppEvent::ApprovalDecision {
+            fingerprint,
+            decision: ApprovalDecision::ApproveOnce,
+        };
+        state = update(state, decision.clone());
+        assert_eq!(state.screen, super::Screen::Conversation);
+        assert_eq!(
+            state.approval.resolution().unwrap().decision,
+            ApprovalDecision::ApproveOnce
+        );
+
+        state = update(state, decision);
+        assert_eq!(
+            state.approval.resolution().unwrap().decision,
+            ApprovalDecision::ApproveOnce
+        );
     }
 
     #[test]
