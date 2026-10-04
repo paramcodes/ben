@@ -143,3 +143,14 @@ This is a CLI/TUI project. Verification is CLI-only and does not need a browser 
 ## Stack direction
 
 The plan recommends Rust, Ratatui/Crossterm, and Tokio for a native terminal app with explicit concurrency boundaries. It compares Go and TypeScript with reproducible workload measurements rather than assumed language-wide performance claims. See the [design spec](docs/superpowers/specs/2026-10-03-terminal-coding-agent-design.md).
+
+## Release targets
+
+CI runs on Linux and macOS. Release builds produce a `tar.gz` archive for each platform with a `sha256sum` checksum file.
+
+| Target | Runner | Archive |
+|---|---|---|
+| Linux | `ubuntu-latest` | `ben-ubuntu-latest-vX.Y.Z.tar.gz` |
+| macOS | `macos-latest` | `ben-macos-latest-vX.Y.Z.tar.gz` |
+
+To create a release, push a tag like `v0.1.0`. GitHub Actions builds the binary, archives it, uploads the archive and checksum as release assets, and publishes the release page.
