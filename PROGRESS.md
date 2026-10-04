@@ -56,7 +56,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 22 | [#22](https://github.com/paramcodes/ben/issues/22) | Complete | [PR #68](https://github.com/paramcodes/ben/pull/68) — merged 2026-10-03 |
 | 23 | [#23](https://github.com/paramcodes/ben/issues/23) | Complete | [PR #69](https://github.com/paramcodes/ben/pull/69) — merged 2026-10-04 |
 | 24 | [#24](https://github.com/paramcodes/ben/issues/24) | Complete | [PR #70](https://github.com/paramcodes/ben/pull/70) — merged 2026-10-04 |
-| 25 | [#25](https://github.com/paramcodes/ben/issues/25) | In progress | [#71](https://github.com/paramcodes/ben/pull/71) |
+| 25 | [#25](https://github.com/paramcodes/ben/issues/25) | Complete | [PR #71](https://github.com/paramcodes/ben/pull/71) — merged 2026-10-04 |
 | 26 | [#26](https://github.com/paramcodes/ben/issues/26) | Open | |
 | 27 | [#27](https://github.com/paramcodes/ben/issues/27) | Open | |
 | 28 | [#28](https://github.com/paramcodes/ben/issues/28) | Open | |
@@ -107,3 +107,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #68](https://github.com/paramcodes/ben/pull/68) | 22 | Merged 2026-10-03 | Task 22: Define typed tool registry |
 | [PR #69](https://github.com/paramcodes/ben/pull/69) | 23 | Merged 2026-10-04 | feat: add bounded workspace listing and search |
 | [PR #70](https://github.com/paramcodes/ben/pull/70) | 24 | Merged 2026-10-04 | feat: read bounded workspace files |
+| [PR #71](https://github.com/paramcodes/ben/pull/71) | 25 | Merged 2026-10-04 | feat: assemble bounded repository context |
