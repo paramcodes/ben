@@ -49,3 +49,19 @@ tempfile = { version = "3.27.0", default-features = false, features = ["getrando
 [[bin]]
 name = "ben"
 path = "src/main.rs"
+
+[[bin]]
+name = "ui_render"
+path = "benches/ui_render.rs"
+
+[[bin]]
+name = "context_assembly"
+path = "benches/context_assembly.rs"
+
+[[bin]]
+name = "provider_loop"
+path = "benches/provider_loop.rs"
+
+[[test]]
+name = "provider_loop_test"
+path = "benches/provider_loop_test.rs"
