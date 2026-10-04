@@ -62,7 +62,7 @@ impl Config {
         Self::from_values(&values, model_override)
     }
 
-    fn from_values(
+    pub(crate) fn from_values(
         values: &HashMap<String, String>,
         model_override: Option<&str>,
     ) -> Result<Self, ConfigError> {
