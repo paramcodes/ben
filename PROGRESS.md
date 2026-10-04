@@ -21,7 +21,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 2 — Configuration and provider boundary | 9–13 | Complete |
 | 3 — Streaming and agent loop | 14–20 | Complete |
 | 4 — Workspace context and read-only tools | 21–26 | Complete |
-| 5 — Approval and side-effecting tools | 27–32 | Not started |
+| 5 — Approval and side-effecting tools | 27–32 | In progress |
 | 6 — Sessions and robust recovery | 33–36 | Not started |
 | 7 — Product usability and release | 37–40 | Not started |
 | 8 — Performance evidence and stack comparison | 41–46 | Not started |
@@ -59,7 +59,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 25 | [#25](https://github.com/paramcodes/ben/issues/25) | Complete | [PR #71](https://github.com/paramcodes/ben/pull/71) — merged 2026-10-04 |
 | 26 | [#26](https://github.com/paramcodes/ben/issues/26) | Complete | [PR #72](https://github.com/paramcodes/ben/pull/72) — merged 2026-10-04 |
 | 27 | [#27](https://github.com/paramcodes/ben/issues/27) | Complete | [PR #73](https://github.com/paramcodes/ben/pull/73) — merged 2026-10-04 |
-| 28 | [#28](https://github.com/paramcodes/ben/issues/28) | In progress | [#74](https://github.com/paramcodes/ben/pull/74) |
+| 28 | [#28](https://github.com/paramcodes/ben/issues/28) | Complete | [PR #74](https://github.com/paramcodes/ben/pull/74) — merged 2026-10-04 |
 | 29 | [#29](https://github.com/paramcodes/ben/issues/29) | Open | |
 | 30 | [#30](https://github.com/paramcodes/ben/issues/30) | Open | |
 | 31 | [#31](https://github.com/paramcodes/ben/issues/31) | Open | |
@@ -110,3 +110,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #71](https://github.com/paramcodes/ben/pull/71) | 25 | Merged 2026-10-04 | feat: assemble bounded repository context |
 | [PR #72](https://github.com/paramcodes/ben/pull/72) | 26 | Merged 2026-10-04 | feat: execute read-only model tools |
 | [PR #73](https://github.com/paramcodes/ben/pull/73) | 27 | Merged 2026-10-04 | feat: bind approvals to exact actions |
+| [PR #74](https://github.com/paramcodes/ben/pull/74) | 28 | Merged 2026-10-04 | Task 28: Review tool actions in the TUI |
