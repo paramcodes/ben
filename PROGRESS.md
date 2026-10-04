@@ -71,7 +71,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | PR #82 merged: feat summarize agent work and errors; 12 tests passing |
 | 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Complete | PR #82 merged: feat improve terminal accessibility; 10 tests passing |
 | 39 | [#39](https://github.com/paramcodes/ben/issues/39) | In progress | Branch `task/39-docs` — docs: explain setup and learning path |
-| 40 | [#40](https://github.com/paramcodes/ben/issues/40) | Open | |
+| 40 | [#40](https://github.com/paramcodes/ben/issues/40) | In progress | Branch `task/36-shutdown-consistency` — build: package initial CLI releases |
 | 41 | [#41](https://github.com/paramcodes/ben/issues/41) | Open | |
 | 42 | [#42](https://github.com/paramcodes/ben/issues/42) | Open | |
 | 43 | [#43](https://github.com/paramcodes/ben/issues/43) | Open | |
