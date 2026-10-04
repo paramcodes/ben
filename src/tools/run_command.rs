@@ -455,13 +455,20 @@ esac
     }
 
     fn is_process_alive(pid: u32) -> bool {
-        let status_file = format!("/proc/{pid}/status");
-        if let Ok(content) = fs::read_to_string(&status_file) {
-            !content
-                .lines()
-                .any(|l| l.starts_with("State:") && l.contains('Z'))
-        } else {
-            false
+        #[cfg(unix)]
+        {
+            unsafe { libc::kill(pid as libc::pid_t, 0) == 0 }
+        }
+        #[cfg(not(unix))]
+        {
+            let status_file = format!("/proc/{pid}/status");
+            if let Ok(content) = fs::read_to_string(&status_file) {
+                !content
+                    .lines()
+                    .any(|l| l.starts_with("State:") && l.contains('Z'))
+            } else {
+                false
+            }
         }
     }
 

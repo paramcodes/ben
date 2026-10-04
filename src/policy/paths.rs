@@ -179,11 +179,12 @@ mod tests {
     #[test]
     fn allows_new_files_when_existing_parent_is_inside_root() {
         let root = tempdir().unwrap();
+        let root_canonical = fs::canonicalize(root.path()).unwrap();
 
         let resolved =
             WorkspacePath::resolve(root.path(), "new/deep/file.txt", PathIntent::Create).unwrap();
 
-        assert_eq!(resolved.path(), root.path().join("new/deep/file.txt"));
+        assert_eq!(resolved.path(), root_canonical.join("new/deep/file.txt"));
     }
 
     #[cfg(unix)]

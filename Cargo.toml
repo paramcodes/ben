@@ -26,6 +26,7 @@ serde = {
 }
 serde_json = { version = "1.0.151", default-features = false, features = ["std"] }
 thiserror = "2.0.21"
+libc = "0.2.190"
 tokio = {
     version = "1.53.2",
     default-features = false,
