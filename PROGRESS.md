@@ -66,7 +66,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 32 | [#32](https://github.com/paramcodes/ben/issues/32) | Complete | [PR #78](https://github.com/paramcodes/ben/pull/78) — merged 2026-10-04 |
 | 33 | [#33](https://github.com/paramcodes/ben/issues/33) | Complete | [PR #79](https://github.com/paramcodes/ben/pull/79) — merged 2026-10-04 |
 | 34 | [#34](https://github.com/paramcodes/ben/issues/34) | Complete | [PR #80](https://github.com/paramcodes/ben/pull/80) — merged 2026-10-04 |
-| 35 | [#35](https://github.com/paramcodes/ben/issues/35) | In progress | |
+| 35 | [#35](https://github.com/paramcodes/ben/issues/35) | In progress | [PR #81](https://github.com/paramcodes/ben/pull/81) — open |
 | 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Open | |
 | 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Open | |
 | 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Open | |
@@ -117,3 +117,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #78](https://github.com/paramcodes/ben/pull/78) | 32 | Merged 2026-10-04 | feat: gate side effects on user approval |
 | [PR #79](https://github.com/paramcodes/ben/pull/79) | 33 | Merged 2026-10-04 | feat: define versioned session format |
 | [PR #80](https://github.com/paramcodes/ben/pull/80) | 34 | Merged 2026-10-04 | Task 34: Persist and recover sessions |
+| [PR #81](https://github.com/paramcodes/ben/pull/81) | 35 | Open | Task 35: Add resume/list/clear CLI flows |
