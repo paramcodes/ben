@@ -2,9 +2,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use super::event::AppEvent;
 use crate::policy::approval::{ApprovalDecision, ApprovalState};
-use crate::providers::types::ProviderEvent;
-use crate::sessions::model::SessionMessage;
-use crate::sessions::model::SessionRecord;
+use crate::providers::types::{ProviderEvent, Usage};
+use crate::sessions::model::{SessionMessage, SessionRecord, ToolCallSummary};
 use crate::tools::propose_edit::ProposedEdit;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -79,6 +78,18 @@ pub struct AppState {
     pub resumed_session_id: Option<String>,
     /// One-shot outcome of a clear confirmation, consumed by the caller.
     pub cleared_session_id: Option<String>,
+    /// Provider/model that handled the last turn, when known.
+    pub model: Option<String>,
+    /// Token usage reported by the provider, when available.
+    pub usage: Option<Usage>,
+    /// Elapsed wall-clock milliseconds of the last turn.
+    pub elapsed_ms: Option<u64>,
+    /// Outcomes of tool calls made during the last turn.
+    pub tool_outcomes: Vec<ToolCallSummary>,
+    /// Workspace-relative files changed by the last turn.
+    pub changed_files: Vec<String>,
+    /// Suggested next step when the last turn failed.
+    pub error_next_step: Option<String>,
 }
 
 /// Apply one event to state. This function performs no terminal I/O.
@@ -163,6 +174,28 @@ pub fn update(mut state: AppState, event: AppEvent) -> AppState {
         }
         AppEvent::EditProposed(edit) => {
             state.pending_edit = Some(edit);
+        }
+        AppEvent::TurnComplete {
+            model,
+            usage,
+            elapsed_ms,
+            tool_outcomes,
+            changed_files,
+        } => {
+            state.status = Status::Completed;
+            state.model = Some(model);
+            state.usage = usage;
+            state.elapsed_ms = Some(elapsed_ms);
+            state.tool_outcomes = tool_outcomes;
+            state.changed_files = changed_files;
+        }
+        AppEvent::TurnFailed { error, next_step } => {
+            state.status = Status::Failed;
+            state.transcript.push(TranscriptEntry {
+                speaker: Speaker::System,
+                text: error.clone(),
+            });
+            state.error_next_step = Some(next_step);
         }
         AppEvent::SessionRestored(entries) => {
             state.transcript.extend(entries);
@@ -406,7 +439,7 @@ mod tests {
         },
         policy::approval::{ApprovalDecision, PendingAction},
         providers::types::{ProviderError, ProviderEvent},
-        sessions::model::{SessionMessage, SessionRecord},
+        sessions::model::{SessionMessage, SessionRecord, ToolCallSummary},
     };
     use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -934,5 +967,93 @@ mod tests {
 
         assert_eq!(state.input, "abc");
         assert_eq!(state.input_cursor, 3);
+    }
+
+    #[test]
+    fn absent_usage_is_rendered_as_absent() {
+        let state = update(
+            AppState::default(),
+            AppEvent::TurnComplete {
+                model: "test-model".into(),
+                usage: None,
+                elapsed_ms: 500,
+                tool_outcomes: vec![],
+                changed_files: vec![],
+            },
+        );
+
+        assert_eq!(state.status, Status::Completed);
+        assert_eq!(state.model.as_deref(), Some("test-model"));
+        assert!(state.usage.is_none(), "absent usage must stay absent");
+        assert_eq!(state.elapsed_ms, Some(500));
+        assert!(state.tool_outcomes.is_empty());
+        assert!(state.changed_files.is_empty());
+        assert!(state.error_next_step.is_none());
+    }
+
+    #[test]
+    fn provider_error_records_error_and_next_step() {
+        let state = update(
+            AppState::default(),
+            AppEvent::TurnFailed {
+                error: "transport failed".into(),
+                next_step: "check your network and retry".into(),
+            },
+        );
+
+        assert_eq!(state.status, Status::Failed);
+        assert!(state.error_next_step.is_some());
+        let notice = state
+            .transcript
+            .iter()
+            .find(|e| e.speaker == Speaker::System && e.text.contains("transport failed"))
+            .expect("the error must appear in the transcript");
+        assert_eq!(notice.speaker, Speaker::System);
+    }
+
+    #[test]
+    fn tool_failures_are_recorded() {
+        use crate::sessions::model::ToolOutcome;
+
+        let state = update(
+            AppState::default(),
+            AppEvent::TurnComplete {
+                model: "test-model".into(),
+                usage: None,
+                elapsed_ms: 100,
+                tool_outcomes: vec![ToolCallSummary {
+                    call_id: "call-1".into(),
+                    tool: "edit_file".into(),
+                    outcome: ToolOutcome::Failed,
+                    changed_paths: vec![],
+                    output_bytes: 0,
+                }],
+                changed_files: vec![],
+            },
+        );
+
+        assert_eq!(state.tool_outcomes.len(), 1);
+        assert_eq!(state.tool_outcomes[0].outcome, ToolOutcome::Failed);
+    }
+
+    #[test]
+    fn successful_file_changes_are_recorded() {
+        let state = update(
+            AppState::default(),
+            AppEvent::TurnComplete {
+                model: "test-model".into(),
+                usage: Some(crate::providers::types::Usage {
+                    input_tokens: 10,
+                    output_tokens: 5,
+                }),
+                elapsed_ms: 200,
+                tool_outcomes: vec![],
+                changed_files: vec!["src/app/update.rs".into(), "README.md".into()],
+            },
+        );
+
+        assert_eq!(state.changed_files.len(), 2);
+        assert!(state.usage.is_some());
+        assert_eq!(state.changed_files[0], "src/app/update.rs");
     }
 }

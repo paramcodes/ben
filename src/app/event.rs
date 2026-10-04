@@ -1,6 +1,7 @@
 use crate::app::update::TranscriptEntry;
 use crate::policy::approval::{ActionFingerprint, ApprovalDecision, PendingAction};
-use crate::providers::types::{ProviderError, ProviderEvent};
+use crate::providers::types::{ProviderError, ProviderEvent, Usage};
+use crate::sessions::model::ToolCallSummary;
 use crate::tools::propose_edit::ProposedEdit;
 use crossterm::event::KeyEvent;
 
@@ -32,6 +33,19 @@ pub enum AppEvent {
     ClearResolved {
         id: String,
         confirmed: bool,
+    },
+    /// A turn completed with summary information for the UI.
+    TurnComplete {
+        model: String,
+        usage: Option<Usage>,
+        elapsed_ms: u64,
+        tool_outcomes: Vec<ToolCallSummary>,
+        changed_files: Vec<String>,
+    },
+    /// A turn failed; `next_step` suggests what the user can do.
+    TurnFailed {
+        error: String,
+        next_step: String,
     },
     /// The stored conversation was loaded before the first frame.
     SessionRestored(Vec<TranscriptEntry>),
