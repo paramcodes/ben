@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     policy::{
-        approval::ApprovalResolution,
+        approval::{ApprovalResolution, PendingAction},
         commands::{CommandPolicy, CommandPolicyError, CommandRequest, ValidatedCommand},
     },
     tools::{Tool, ToolExecutionError, ToolMetadata, ToolRequest, ToolResult},
@@ -191,6 +191,14 @@ pub async fn run_command(
     execute_command(&validated).await
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RunCommandInput {
+    pub argv: Vec<String>,
+    #[serde(default)]
+    pub cwd: Option<String>,
+}
+
 pub struct RunCommandTool {
     policy: CommandPolicy,
 }
@@ -206,13 +214,14 @@ impl RunCommandTool {
         &self.policy
     }
 
-    pub async fn execute_approved(
-        &self,
-        request: &CommandRequest,
-        resolution: &ApprovalResolution,
-    ) -> Result<CommandOutput, RunCommandError> {
-        let validated = self.policy.authorize(request, resolution)?;
-        execute_command(&validated).await
+    /// Parses a model-supplied call into a policy request before any approval is asked for.
+    fn command_request(&self, request: &ToolRequest) -> Result<CommandRequest, ToolExecutionError> {
+        let input: RunCommandInput =
+            serde_json::from_value(request.arguments.clone()).map_err(|error| {
+                ToolExecutionError::Refused(format!("invalid tool arguments: {error}"))
+            })?;
+        CommandRequest::new(input.argv, input.cwd.unwrap_or_else(|| ".".to_owned()))
+            .map_err(|error| ToolExecutionError::Refused(error.to_string()))
     }
 }
 
@@ -246,6 +255,41 @@ impl Tool for RunCommandTool {
     ) -> BoxFuture<'a, Result<ToolResult, ToolExecutionError>> {
         Box::pin(async move { Err(ToolExecutionError::Failed) })
     }
+
+    fn requires_approval(&self) -> bool {
+        true
+    }
+
+    fn pending_action(&self, request: &ToolRequest) -> Result<PendingAction, ToolExecutionError> {
+        let command = self.command_request(request)?;
+        self.policy
+            .to_pending_action(&command)
+            .map_err(|error| ToolExecutionError::Refused(error.to_string()))
+    }
+
+    fn execute_approved<'a>(
+        &'a self,
+        request: ToolRequest,
+        resolution: &'a ApprovalResolution,
+    ) -> BoxFuture<'a, Result<ToolResult, ToolExecutionError>> {
+        Box::pin(async move {
+            let command = self.command_request(&request)?;
+            let validated = self
+                .policy
+                .authorize(&command, resolution)
+                .map_err(|error| ToolExecutionError::Refused(error.to_string()))?;
+            let output = execute_command(&validated)
+                .await
+                .map_err(|error| ToolExecutionError::Refused(error.to_string()))?;
+            Ok(ToolResult {
+                call_id: request.call_id,
+                content: serde_json::to_string(&output).unwrap_or_else(|_| {
+                    "{\"error\":\"command output could not be encoded\"}".into()
+                }),
+                is_error: !output.success(),
+            })
+        })
+    }
 }
 
 #[cfg(test)]
@@ -258,10 +302,14 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::{RunCommandError, execute_command, run_command, spawn_command};
-    use crate::policy::{
-        approval::{ApprovalDecision, ApprovalState, PendingAction},
-        commands::{CommandPolicy, CommandPolicyError, CommandRequest, ValidatedCommand},
+    use super::{RunCommandError, RunCommandTool, execute_command, run_command, spawn_command};
+    use crate::{
+        agent::message::ToolCallId,
+        policy::{
+            approval::{ApprovalDecision, ApprovalResolution, ApprovalState, PendingAction},
+            commands::{CommandPolicy, CommandPolicyError, CommandRequest, ValidatedCommand},
+        },
+        tools::{Tool, ToolExecutionError, ToolRequest},
     };
 
     fn create_fake_executable(dir: &Path) -> PathBuf {
@@ -587,5 +635,119 @@ esac
             RunCommandError::Policy(CommandPolicyError::InvalidCwd) => {}
             other => panic!("expected InvalidCwd, got {other:?}"),
         }
+    }
+
+    /// Builds a call that runs the fake executable and records its pid, proving it spawned.
+    fn command_tool_request(script: &Path, marker: &Path) -> ToolRequest {
+        ToolRequest {
+            call_id: ToolCallId::new("call-cmd"),
+            name: "run_command".into(),
+            arguments: serde_json::json!({
+                "argv": [script, "record_pid_and_sleep", marker, "0"],
+            }),
+        }
+    }
+
+    fn approve(action: &PendingAction) -> ApprovalResolution {
+        let mut state = ApprovalState::default();
+        let fingerprint = state.request(action.clone());
+        state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone()
+    }
+
+    #[tokio::test]
+    async fn approved_command_tool_runs_the_reviewed_argv() {
+        let dir = tempdir().unwrap();
+        let script = create_fake_executable(dir.path());
+        let marker = dir.path().join("child.pid");
+        let tool = RunCommandTool::new(dir.path());
+        let request = command_tool_request(&script, &marker);
+        let action = tool.pending_action(&request).unwrap();
+
+        assert_eq!(action.tool(), "run_command");
+        assert_eq!(action.target(), Some("."));
+        assert!(action.arguments()["argv"].is_array());
+
+        let result = tool
+            .execute_approved(request, &approve(&action))
+            .await
+            .unwrap();
+
+        assert_eq!(result.call_id.as_str(), "call-cmd");
+        assert!(!result.is_error);
+        assert!(
+            result.content.contains("\"exit_code\":0"),
+            "{}",
+            result.content
+        );
+        assert!(
+            marker.exists(),
+            "an approved command must spawn its process"
+        );
+    }
+
+    #[tokio::test]
+    async fn rejected_command_tool_never_spawns_a_process() {
+        let dir = tempdir().unwrap();
+        let script = create_fake_executable(dir.path());
+        let marker = dir.path().join("child.pid");
+        let tool = RunCommandTool::new(dir.path());
+        let request = command_tool_request(&script, &marker);
+        let action = tool.pending_action(&request).unwrap();
+        let mut state = ApprovalState::default();
+        let fingerprint = state.request(action.clone());
+        let rejection = state
+            .decide(fingerprint, ApprovalDecision::Reject)
+            .unwrap()
+            .clone();
+
+        let error = tool
+            .execute_approved(request, &rejection)
+            .await
+            .unwrap_err();
+
+        assert!(matches!(error, ToolExecutionError::Refused(_)), "{error:?}");
+        assert!(!marker.exists());
+    }
+
+    #[tokio::test]
+    async fn command_tool_refuses_an_approval_for_different_argv() {
+        let dir = tempdir().unwrap();
+        let script = create_fake_executable(dir.path());
+        let marker = dir.path().join("child.pid");
+        let tool = RunCommandTool::new(dir.path());
+        let reviewed = tool
+            .pending_action(&command_tool_request(&script, &marker))
+            .unwrap();
+        let requested = ToolRequest {
+            call_id: ToolCallId::new("call-cmd"),
+            name: "run_command".into(),
+            arguments: serde_json::json!({ "argv": [script, "stdout"] }),
+        };
+
+        let error = tool
+            .execute_approved(requested, &approve(&reviewed))
+            .await
+            .unwrap_err();
+
+        assert!(matches!(error, ToolExecutionError::Refused(_)), "{error:?}");
+        assert!(!marker.exists());
+    }
+
+    #[tokio::test]
+    async fn command_tool_never_runs_without_approval() {
+        let dir = tempdir().unwrap();
+        let script = create_fake_executable(dir.path());
+        let marker = dir.path().join("child.pid");
+        let tool = RunCommandTool::new(dir.path());
+
+        assert!(tool.requires_approval());
+        assert_eq!(
+            tool.execute(command_tool_request(&script, &marker)).await,
+            Err(ToolExecutionError::Failed)
+        );
+        assert!(!marker.exists());
     }
 }

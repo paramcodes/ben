@@ -15,12 +15,13 @@ use crate::{
         budget::{BoundedContext, ContextItem, TokenEstimator, assemble_workspace_context},
         instructions::{InstructionError, load_instructions},
     },
+    policy::approval::{ApprovalDecision, ApprovalResolution},
     providers::retry::{RetryCheckpoint, RetryPolicy, RetryingProvider},
     providers::types::{
         CompletionReason, Provider, ProviderError, ProviderEvent, ProviderRequest, ToolCall,
         ToolSpecification,
     },
-    tools::{ToolRegistry, ToolRegistryError, ToolRequest},
+    tools::{ToolExecutionError, ToolRegistry, ToolRegistryError, ToolRequest, ToolResult},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -46,6 +47,7 @@ pub struct Agent {
     side_effect_checkpoint: bool,
     context: Option<BoundedContext>,
     tool_registry: Option<Arc<ToolRegistry>>,
+    approvals: Option<mpsc::Receiver<ApprovalResolution>>,
     max_tool_result_bytes: usize,
 }
 
@@ -67,6 +69,7 @@ impl Agent {
             context: None,
             tool_registry: None,
             max_tool_result_bytes: 64 * 1024,
+            approvals: None,
         }
     }
 
@@ -87,6 +90,11 @@ impl Agent {
             .collect();
         self.max_tool_result_bytes = max_result_bytes;
         self.tool_registry = Some(registry);
+    }
+
+    /// Registers the channel that delivers user decisions while a turn waits for approval.
+    pub fn set_approvals(&mut self, decisions: mpsc::Receiver<ApprovalResolution>) {
+        self.approvals = Some(decisions);
     }
 
     /// Adds already bounded repository context to each provider request.
@@ -268,36 +276,23 @@ impl Agent {
                 {
                     return StopReason::ChannelClosed;
                 }
-                let arguments = serde_json::from_str::<serde_json::Value>(&call.arguments);
-                let tool_result = match arguments {
-                    Ok(arguments) if arguments.is_object() => {
-                        let execution = registry.execute_bounded(
-                            ToolRequest {
-                                call_id: call.id.clone(),
-                                name: call.name.clone(),
-                                arguments,
-                            },
-                            self.max_tool_result_bytes,
-                        );
-                        tokio::select! {
-                            biased;
-                            _ = cancellation.cancelled() => {
-                                let _ = sender.send(Ok(AppEvent::ProviderCancelled)).await;
-                                return StopReason::Cancelled;
-                            }
-                            result = execution => match result {
-                                Ok(result) => result.content,
-                                Err(ToolRegistryError::UnknownTool { .. }) => bounded_tool_error("unknown tool", self.max_tool_result_bytes),
-                                Err(_) => bounded_tool_error("tool execution failed", self.max_tool_result_bytes),
-                            }
-                        }
-                    }
-                    _ => bounded_tool_error("invalid tool arguments", self.max_tool_result_bytes),
-                };
-                self.record_turn_message(
-                    &mut transient_history,
-                    Message::tool_result(call.id, tool_result),
-                );
+                match resolve_tool_call(
+                    registry.as_ref(),
+                    &mut self.approvals,
+                    &call,
+                    self.max_tool_result_bytes,
+                    &mut self.side_effect_checkpoint,
+                    &cancellation,
+                    &sender,
+                )
+                .await
+                {
+                    ToolCallOutcome::Content(content) => self.record_turn_message(
+                        &mut transient_history,
+                        Message::tool_result(call.id, content),
+                    ),
+                    ToolCallOutcome::Stop(reason) => return reason,
+                }
             }
         }
     }
@@ -324,6 +319,180 @@ impl Agent {
     }
 }
 
+/// Outcome of one tool call: bounded content for the model, or a stop for the whole turn.
+enum ToolCallOutcome {
+    Content(String),
+    Stop(StopReason),
+}
+
+/// Runs one tool call, pausing for an explicit decision when the tool can cause side effects.
+async fn resolve_tool_call(
+    registry: &ToolRegistry,
+    approvals: &mut Option<mpsc::Receiver<ApprovalResolution>>,
+    call: &ToolCall,
+    max_tool_result_bytes: usize,
+    side_effect_completed: &mut bool,
+    cancellation: &CancellationToken,
+    sender: &mpsc::Sender<std::io::Result<AppEvent>>,
+) -> ToolCallOutcome {
+    let Ok(arguments) = serde_json::from_str::<serde_json::Value>(&call.arguments) else {
+        return ToolCallOutcome::Content(bounded_tool_error(
+            "invalid tool arguments",
+            max_tool_result_bytes,
+        ));
+    };
+    if !arguments.is_object() {
+        return ToolCallOutcome::Content(bounded_tool_error(
+            "invalid tool arguments",
+            max_tool_result_bytes,
+        ));
+    }
+    let request = ToolRequest {
+        call_id: call.id.clone(),
+        name: call.name.clone(),
+        arguments,
+    };
+
+    if !registry.requires_approval(&call.name) {
+        let execution = registry.execute_bounded(request, max_tool_result_bytes);
+        return tokio::select! {
+            biased;
+            _ = cancellation.cancelled() => {
+                let _ = sender.send(Ok(AppEvent::ProviderCancelled)).await;
+                ToolCallOutcome::Stop(StopReason::Cancelled)
+            }
+            result = execution => ToolCallOutcome::Content(read_only_content(result, max_tool_result_bytes)),
+        };
+    }
+
+    let Some(decisions) = approvals.as_mut() else {
+        return ToolCallOutcome::Content(approval_refusal(
+            &call.name,
+            "approval_unavailable",
+            "this action needs approval and no approval channel is connected, so it was not executed",
+            max_tool_result_bytes,
+        ));
+    };
+    let action = match registry.pending_action(&request) {
+        Ok(action) => action,
+        Err(ToolRegistryError::UnknownTool { .. }) => {
+            return ToolCallOutcome::Content(bounded_tool_error(
+                "unknown tool",
+                max_tool_result_bytes,
+            ));
+        }
+        Err(error) => {
+            return ToolCallOutcome::Content(approval_refusal(
+                &call.name,
+                "action_invalid",
+                &format!("the requested action is not valid: {error}"),
+                max_tool_result_bytes,
+            ));
+        }
+    };
+
+    if sender
+        .send(Ok(AppEvent::ToolStatus(format!(
+            "Awaiting approval for {}",
+            call.name
+        ))))
+        .await
+        .is_err()
+        || sender
+            .send(Ok(AppEvent::ApprovalRequested(action.clone())))
+            .await
+            .is_err()
+    {
+        return ToolCallOutcome::Stop(StopReason::ChannelClosed);
+    }
+
+    let resolution = tokio::select! {
+        biased;
+        _ = cancellation.cancelled() => {
+            let _ = sender.send(Ok(AppEvent::ProviderCancelled)).await;
+            return ToolCallOutcome::Stop(StopReason::Cancelled);
+        }
+        resolution = decisions.recv() => match resolution {
+            Some(resolution) => resolution,
+            None => return ToolCallOutcome::Stop(StopReason::ChannelClosed),
+        }
+    };
+
+    match resolution.decision {
+        ApprovalDecision::Reject => {
+            return ToolCallOutcome::Content(approval_refusal(
+                &call.name,
+                "rejected",
+                "the user rejected this action, so it was not executed",
+                max_tool_result_bytes,
+            ));
+        }
+        ApprovalDecision::Cancel => {
+            return ToolCallOutcome::Content(approval_refusal(
+                &call.name,
+                "cancelled",
+                "the user cancelled this action, so it was not executed",
+                max_tool_result_bytes,
+            ));
+        }
+        ApprovalDecision::ApproveOnce => {}
+    }
+
+    if resolution.action != action {
+        return ToolCallOutcome::Content(approval_refusal(
+            &call.name,
+            "action_changed",
+            "the approved action no longer matches the requested action, so it was not executed",
+            max_tool_result_bytes,
+        ));
+    }
+
+    *side_effect_completed = true;
+    let execution = registry.execute_approved(request, &resolution, max_tool_result_bytes);
+    tokio::select! {
+        biased;
+            _ = cancellation.cancelled() => {
+                let _ = sender.send(Ok(AppEvent::ProviderCancelled)).await;
+                ToolCallOutcome::Stop(StopReason::Cancelled)
+            }
+        result = execution => match result {
+            Ok(ToolResult { content, .. }) => ToolCallOutcome::Content(content),
+            Err(ToolRegistryError::UnknownTool { .. }) => ToolCallOutcome::Content(
+                bounded_tool_error("unknown tool", max_tool_result_bytes),
+            ),
+            Err(error) => ToolCallOutcome::Content(approval_refusal(
+                &call.name,
+                "not_applied",
+                &format!("the approved action could not be applied: {error}"),
+                max_tool_result_bytes,
+            )),
+        }
+    }
+}
+
+fn read_only_content(
+    result: Result<ToolResult, ToolRegistryError>,
+    max_tool_result_bytes: usize,
+) -> String {
+    match result {
+        Ok(result) => result.content,
+        Err(ToolRegistryError::UnknownTool { .. }) => {
+            bounded_tool_error("unknown tool", max_tool_result_bytes)
+        }
+        Err(ToolRegistryError::Execution(ToolExecutionError::Refused(reason))) => {
+            bounded_tool_error(&reason, max_tool_result_bytes)
+        }
+        Err(_) => bounded_tool_error("tool execution failed", max_tool_result_bytes),
+    }
+}
+
+fn approval_refusal(tool: &str, code: &str, detail: &str, max_bytes: usize) -> String {
+    bounded_tool_error(
+        &serde_json::json!({ "error": code, "tool": tool, "detail": detail }).to_string(),
+        max_bytes,
+    )
+}
+
 fn bounded_tool_error(message: &str, max_bytes: usize) -> String {
     let mut boundary = message.len().min(max_bytes);
     while !message.is_char_boundary(boundary) {
@@ -336,6 +505,7 @@ fn bounded_tool_error(message: &str, max_bytes: usize) -> String {
 mod tests {
     use std::{
         fs,
+        path::{Path, PathBuf},
         sync::{
             Arc,
             atomic::{AtomicUsize, Ordering},
@@ -353,11 +523,15 @@ mod tests {
         agent::{limits::AgentLimits, message::MessageRole},
         app::event::AppEvent,
         context::budget::{BoundedContext, ByteFallbackEstimator, ContextItem},
+        policy::approval::{ApprovalDecision, ApprovalResolution, ApprovalState, PendingAction},
         providers::{
             fake::FakeProvider,
             types::{CompletionReason, ProviderError, ProviderEvent, ToolCall},
         },
-        tools::{Tool, ToolExecutionError, ToolMetadata, ToolRegistry, ToolRequest, ToolResult},
+        tools::{
+            Tool, ToolExecutionError, ToolMetadata, ToolRegistry, ToolRequest, ToolResult,
+            run_command::RunCommandTool,
+        },
     };
 
     struct FixedTool {
@@ -906,6 +1080,295 @@ mod tests {
             StopReason::InvalidResponse
         );
         assert_eq!(executions.load(Ordering::SeqCst), 0);
+        assert_eq!(provider.requests().len(), 1);
+    }
+
+    /// Creates a workspace whose only executable appends a marker file when it runs.
+    fn workspace_with_marker_script() -> (tempfile::TempDir, PathBuf, PathBuf) {
+        let root = tempfile::tempdir().unwrap();
+        let script = root.path().join("fake_side_effect.sh");
+        fs::write(&script, "#!/bin/sh\nprintf 'x' >> \"$1\"\n").unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut permissions = fs::metadata(&script).unwrap().permissions();
+            permissions.set_mode(0o755);
+            fs::set_permissions(&script, permissions).unwrap();
+        }
+        let marker = root.path().join("marker.txt");
+        (root, script, marker)
+    }
+
+    fn command_registry(root: &Path) -> Arc<ToolRegistry> {
+        let mut registry = ToolRegistry::default();
+        registry
+            .register(Arc::new(RunCommandTool::new(root)))
+            .unwrap();
+        Arc::new(registry)
+    }
+
+    fn command_turn(call_id: &str, script: &Path, marker: &Path) -> Arc<FakeProvider> {
+        let arguments = serde_json::json!({ "argv": [script, marker] }).to_string();
+        Arc::new(FakeProvider::with_responses(vec![
+            tool_response(call_id, "run_command", &arguments),
+            vec![
+                Ok(ProviderEvent::TextDelta("done".into())),
+                Ok(ProviderEvent::Completed(CompletionReason::EndTurn)),
+            ],
+        ]))
+    }
+
+    fn spawn_command_turn(
+        provider: Arc<FakeProvider>,
+        registry: Arc<ToolRegistry>,
+        decisions: Option<mpsc::Receiver<ApprovalResolution>>,
+    ) -> (
+        tokio::task::JoinHandle<StopReason>,
+        mpsc::Receiver<std::io::Result<AppEvent>>,
+    ) {
+        let mut agent = Agent::new(provider, "test-model", Vec::new(), limits(2, 4));
+        agent.set_tool_registry(registry, 4096);
+        if let Some(decisions) = decisions {
+            agent.set_approvals(decisions);
+        }
+        let (sender, receiver) = mpsc::channel(32);
+        let task = tokio::spawn(async move {
+            agent
+                .run_turn("apply the change", CancellationToken::new(), sender)
+                .await
+        });
+        (task, receiver)
+    }
+
+    async fn wait_for_action(
+        receiver: &mut mpsc::Receiver<std::io::Result<AppEvent>>,
+    ) -> PendingAction {
+        loop {
+            match receiver.recv().await {
+                Some(Ok(AppEvent::ApprovalRequested(action))) => return action,
+                Some(Ok(_)) => {}
+                other => panic!("expected an approval request, got {other:?}"),
+            }
+        }
+    }
+
+    fn resolution(action: &PendingAction, decision: ApprovalDecision) -> ApprovalResolution {
+        let mut state = ApprovalState::default();
+        let fingerprint = state.request(action.clone());
+        state.decide(fingerprint, decision).unwrap().clone()
+    }
+
+    fn tool_result(provider: &FakeProvider, call_id: &str) -> String {
+        let requests = provider.requests();
+        requests[1]
+            .messages
+            .iter()
+            .find(|message| {
+                message.role == MessageRole::Tool
+                    && message
+                        .tool_call_id
+                        .as_ref()
+                        .is_some_and(|id| id.as_str() == call_id)
+            })
+            .expect("the tool result must be sent under its original call id")
+            .content
+            .clone()
+    }
+
+    #[tokio::test]
+    async fn approved_command_runs_once_and_reports_its_result() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let provider = command_turn("call-run", &script, &marker);
+        let (decisions, pending) = mpsc::channel(4);
+        let (task, mut events) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(pending),
+        );
+
+        let action = wait_for_action(&mut events).await;
+        assert_eq!(action.tool(), "run_command");
+        decisions
+            .send(resolution(&action, ApprovalDecision::ApproveOnce))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::Completed(CompletionReason::EndTurn)
+        );
+        assert_eq!(fs::read_to_string(&marker).unwrap(), "x");
+        assert!(tool_result(&provider, "call-run").contains("\"exit_code\":0"));
+    }
+
+    #[tokio::test]
+    async fn approved_side_effect_blocks_provider_replay() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let arguments = serde_json::json!({ "argv": [script, marker] }).to_string();
+        let provider = Arc::new(FakeProvider::with_responses(vec![
+            tool_response("call-replay", "run_command", &arguments),
+            vec![Err(ProviderError::Transport)],
+        ]));
+        let (decisions, pending) = mpsc::channel(4);
+        let (task, mut events) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(pending),
+        );
+
+        let action = wait_for_action(&mut events).await;
+        decisions
+            .send(resolution(&action, ApprovalDecision::ApproveOnce))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::ProviderError(ProviderError::Transport)
+        );
+        assert_eq!(provider.requests().len(), 2);
+        assert_eq!(fs::read_to_string(&marker).unwrap(), "x");
+    }
+
+    #[tokio::test]
+    async fn rejected_command_returns_a_structured_result_without_running() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let provider = command_turn("call-rejected", &script, &marker);
+        let (decisions, pending) = mpsc::channel(4);
+        let (task, mut events) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(pending),
+        );
+
+        let action = wait_for_action(&mut events).await;
+        decisions
+            .send(resolution(&action, ApprovalDecision::Reject))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::Completed(CompletionReason::EndTurn)
+        );
+        assert!(!marker.exists());
+        let result = tool_result(&provider, "call-rejected");
+        assert!(result.contains("\"error\":\"rejected\""), "got {result}");
+        assert!(result.contains("run_command"), "got {result}");
+    }
+
+    #[tokio::test]
+    async fn cancelled_command_returns_a_structured_result_without_running() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let provider = command_turn("call-cancelled", &script, &marker);
+        let (decisions, pending) = mpsc::channel(4);
+        let (task, mut events) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(pending),
+        );
+
+        let action = wait_for_action(&mut events).await;
+        decisions
+            .send(resolution(&action, ApprovalDecision::Cancel))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::Completed(CompletionReason::EndTurn)
+        );
+        assert!(!marker.exists());
+        let result = tool_result(&provider, "call-cancelled");
+        assert!(result.contains("\"error\":\"cancelled\""), "got {result}");
+    }
+
+    #[tokio::test]
+    async fn approval_for_a_different_action_is_refused() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let provider = command_turn("call-modified", &script, &marker);
+        let (decisions, pending) = mpsc::channel(4);
+        let (task, mut events) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(pending),
+        );
+
+        let action = wait_for_action(&mut events).await;
+        let modified = PendingAction::new(
+            "run_command",
+            serde_json::json!({
+                "command": "rm -rf /",
+                "argv": ["rm", "-rf", "/"],
+                "cwd": ".",
+                "path": ".",
+            }),
+        )
+        .unwrap();
+        assert_ne!(modified, action);
+        decisions
+            .send(resolution(&modified, ApprovalDecision::ApproveOnce))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::Completed(CompletionReason::EndTurn)
+        );
+        assert!(!marker.exists());
+        let result = tool_result(&provider, "call-modified");
+        assert!(
+            result.contains("\"error\":\"action_changed\""),
+            "got {result}"
+        );
+    }
+
+    #[tokio::test]
+    async fn approval_gate_stays_closed_without_a_decision_channel() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let provider = command_turn("call-nochannel", &script, &marker);
+        let (task, _events) =
+            spawn_command_turn(provider.clone(), command_registry(root.path()), None);
+
+        assert_eq!(
+            task.await.unwrap(),
+            StopReason::Completed(CompletionReason::EndTurn)
+        );
+        assert!(!marker.exists());
+        let result = tool_result(&provider, "call-nochannel");
+        assert!(
+            result.contains("\"error\":\"approval_unavailable\""),
+            "got {result}"
+        );
+    }
+
+    #[tokio::test]
+    async fn duplicate_completed_call_events_stop_the_turn_before_approval() {
+        let (root, script, marker) = workspace_with_marker_script();
+        let arguments = serde_json::json!({ "argv": [script, marker] }).to_string();
+        let mut events = tool_response("call-duplicate", "run_command", &arguments);
+        events.pop();
+        events.push(Ok(ProviderEvent::ToolCallCompleted(ToolCall {
+            id: ToolCallId::new("call-duplicate"),
+            name: "run_command".into(),
+            arguments: arguments.clone(),
+        })));
+        events.push(Ok(ProviderEvent::Completed(CompletionReason::ToolCalls)));
+        let provider = Arc::new(FakeProvider::with_responses(vec![events]));
+        let (task, mut channel) = spawn_command_turn(
+            provider.clone(),
+            command_registry(root.path()),
+            Some(mpsc::channel(1).1),
+        );
+
+        while let Some(event) = channel.recv().await {
+            assert!(
+                !matches!(event, Ok(AppEvent::ApprovalRequested(_))),
+                "a duplicate call must not reach the approval gate"
+            );
+        }
+        assert_eq!(task.await.unwrap(), StopReason::InvalidResponse);
+        assert!(!marker.exists());
         assert_eq!(provider.requests().len(), 1);
     }
 }

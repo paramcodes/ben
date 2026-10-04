@@ -1,13 +1,21 @@
-use std::{fs::File, io::Read, path::Path};
-
-use serde::{Deserialize, Serialize};
-
-use crate::policy::{
-    approval::{ApprovalDecision, ApprovalResolution, PendingAction, content_digest},
-    paths::{PathIntent, PathResolutionError, WorkspacePath},
+use std::{
+    fs::File,
+    io::Read,
+    path::{Path, PathBuf},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use futures_util::future::BoxFuture;
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    policy::{
+        approval::{ApprovalDecision, ApprovalResolution, PendingAction, content_digest},
+        paths::{PathIntent, PathResolutionError, WorkspacePath},
+    },
+    tools::{Tool, ToolExecutionError, ToolMetadata, ToolRequest, ToolResult},
+};
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ApplyEditResult {
     pub path: String,
 }
@@ -307,6 +315,94 @@ pub fn propose_edit(
     })
 }
 
+/// Presents a file replacement for approval and applies only the reviewed change.
+pub struct ProposeEditTool {
+    root: PathBuf,
+    max_file_bytes: usize,
+    max_diff_bytes: usize,
+}
+
+impl ProposeEditTool {
+    pub fn new(root: impl Into<PathBuf>, max_file_bytes: usize, max_diff_bytes: usize) -> Self {
+        Self {
+            root: root.into(),
+            max_file_bytes,
+            max_diff_bytes,
+        }
+    }
+
+    /// Rebuilds the proposal from the same arguments so the reviewed action is reproducible.
+    fn proposal(&self, request: &ToolRequest) -> Result<ProposedEdit, ToolExecutionError> {
+        let input: ProposeEditInput =
+            serde_json::from_value(request.arguments.clone()).map_err(|error| {
+                ToolExecutionError::Refused(format!("invalid tool arguments: {error}"))
+            })?;
+        propose_edit(&self.root, input, self.max_file_bytes, self.max_diff_bytes)
+            .map_err(|error| ToolExecutionError::Refused(error.to_string()))
+    }
+}
+
+impl Tool for ProposeEditTool {
+    fn metadata(&self) -> ToolMetadata {
+        ToolMetadata {
+            name: "propose_edit".into(),
+            description: "Propose replacing a workspace file's contents after approval.".into(),
+            input_schema: serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Workspace-relative path of the file to replace"
+                    },
+                    "expected_content": {
+                        "type": "string",
+                        "description": "Exact current content; empty when creating a new file"
+                    },
+                    "new_content": {
+                        "type": "string",
+                        "description": "Full replacement content for the file"
+                    }
+                },
+                "required": ["path", "new_content"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn execute<'a>(
+        &'a self,
+        _request: ToolRequest,
+    ) -> BoxFuture<'a, Result<ToolResult, ToolExecutionError>> {
+        Box::pin(async move { Err(ToolExecutionError::Failed) })
+    }
+
+    fn requires_approval(&self) -> bool {
+        true
+    }
+
+    fn pending_action(&self, request: &ToolRequest) -> Result<PendingAction, ToolExecutionError> {
+        Ok(self.proposal(request)?.pending_action)
+    }
+
+    fn execute_approved<'a>(
+        &'a self,
+        request: ToolRequest,
+        resolution: &'a ApprovalResolution,
+    ) -> BoxFuture<'a, Result<ToolResult, ToolExecutionError>> {
+        Box::pin(async move {
+            let proposal = self.proposal(&request)?;
+            let applied = apply_edit(&self.root, &proposal, resolution)
+                .map_err(|error| ToolExecutionError::Refused(error.to_string()))?;
+            Ok(ToolResult {
+                call_id: request.call_id,
+                content: serde_json::to_string(&applied)
+                    .unwrap_or_else(|_| "{\"error\":\"edit result could not be encoded\"}".into()),
+                is_error: false,
+            })
+        })
+    }
+}
+
 fn load_current_content(
     root: &Path,
     input: &ProposeEditInput,
@@ -547,10 +643,14 @@ mod tests {
     use tempfile::tempdir;
 
     use super::{
-        ApplyEditError, ProposeEditError, ProposeEditInput, apply_edit,
+        ApplyEditError, ProposeEditError, ProposeEditInput, ProposeEditTool, apply_edit,
         apply_edit_with_write_failure, propose_edit, unified_diff,
     };
-    use crate::policy::approval::{ApprovalDecision, ApprovalState};
+    use crate::{
+        agent::message::ToolCallId,
+        policy::approval::{ApprovalDecision, ApprovalResolution, ApprovalState, PendingAction},
+        tools::{Tool, ToolExecutionError, ToolRequest},
+    };
 
     fn workspace_with(content: &str) -> (tempfile::TempDir, String) {
         let root = tempdir().unwrap();
@@ -886,5 +986,119 @@ mod tests {
             .map(|e| e.file_name().to_string_lossy().into_owned())
             .collect();
         assert_eq!(entries, vec!["demo.rs"]);
+    }
+
+    fn edit_request(path: &str, expected: &str, new_content: &str) -> ToolRequest {
+        ToolRequest {
+            call_id: ToolCallId::new("call-edit"),
+            name: "propose_edit".into(),
+            arguments: serde_json::json!({
+                "path": path,
+                "expected_content": expected,
+                "new_content": new_content,
+            }),
+        }
+    }
+
+    fn approve(action: &PendingAction) -> ApprovalResolution {
+        let mut state = ApprovalState::default();
+        let fingerprint = state.request(action.clone());
+        state
+            .decide(fingerprint, ApprovalDecision::ApproveOnce)
+            .unwrap()
+            .clone()
+    }
+
+    #[tokio::test]
+    async fn approved_edit_tool_writes_the_reviewed_content_under_the_original_call_id() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let tool = ProposeEditTool::new(root.path(), 4_096, 4_096);
+        let request = edit_request(&path, "alpha\nbeta\n", "alpha\nBETA\n");
+        let action = tool.pending_action(&request).unwrap();
+
+        assert_eq!(action.tool(), "propose_edit");
+        assert_eq!(action.target(), Some(path.as_str()));
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nbeta\n",
+            "reviewing an action must not change the workspace"
+        );
+
+        let result = tool
+            .execute_approved(request, &approve(&action))
+            .await
+            .unwrap();
+
+        assert_eq!(result.call_id.as_str(), "call-edit");
+        assert!(!result.is_error);
+        assert!(result.content.contains(&path));
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nBETA\n"
+        );
+    }
+
+    #[tokio::test]
+    async fn rejected_edit_tool_never_writes() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let tool = ProposeEditTool::new(root.path(), 4_096, 4_096);
+        let request = edit_request(&path, "alpha\nbeta\n", "alpha\nBETA\n");
+        let action = tool.pending_action(&request).unwrap();
+        let mut state = ApprovalState::default();
+        let fingerprint = state.request(action.clone());
+        let rejection = state
+            .decide(fingerprint, ApprovalDecision::Reject)
+            .unwrap()
+            .clone();
+
+        let error = tool
+            .execute_approved(request, &rejection)
+            .await
+            .unwrap_err();
+
+        assert!(matches!(error, ToolExecutionError::Refused(_)), "{error:?}");
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nbeta\n"
+        );
+    }
+
+    #[tokio::test]
+    async fn approval_for_different_content_does_not_write() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let tool = ProposeEditTool::new(root.path(), 4_096, 4_096);
+        let reviewed = tool
+            .pending_action(&edit_request(&path, "alpha\nbeta\n", "alpha\nREVIEWED\n"))
+            .unwrap();
+        let requested = edit_request(&path, "alpha\nbeta\n", "alpha\nOTHER\n");
+
+        let error = tool
+            .execute_approved(requested, &approve(&reviewed))
+            .await
+            .unwrap_err();
+
+        assert!(matches!(error, ToolExecutionError::Refused(_)), "{error:?}");
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "alpha\nbeta\n"
+        );
+    }
+
+    #[tokio::test]
+    async fn approval_is_revalidated_against_the_current_file() {
+        let (root, path) = workspace_with("alpha\nbeta\n");
+        let tool = ProposeEditTool::new(root.path(), 4_096, 4_096);
+        let request = edit_request(&path, "alpha\nbeta\n", "alpha\nBETA\n");
+        let action = tool.pending_action(&request).unwrap();
+        let approval = approve(&action);
+        fs::write(root.path().join(&path), "changed elsewhere\n").unwrap();
+
+        let error = tool.execute_approved(request, &approval).await.unwrap_err();
+
+        assert!(matches!(error, ToolExecutionError::Refused(_)), "{error:?}");
+        assert_eq!(
+            fs::read_to_string(root.path().join(&path)).unwrap(),
+            "changed elsewhere\n"
+        );
     }
 }
