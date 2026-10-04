@@ -57,3 +57,11 @@ path = "benches/ui_render.rs"
 [[bin]]
 name = "context_assembly"
 path = "benches/context_assembly.rs"
+
+[[bin]]
+name = "provider_loop"
+path = "benches/provider_loop.rs"
+
+[[test]]
+name = "provider_loop_test"
+path = "benches/provider_loop_test.rs"

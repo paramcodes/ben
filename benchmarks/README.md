@@ -33,8 +33,14 @@ Each benchmark emits machine-readable JSON with:
 - `environment`: OS, Rust version, toolchain, terminal dimensions
 - `fixture_hashes`: sha256 of transcript and repository fixtures
 
-## Notes
+## Provider latency
 
-- Benchmarks use local fixtures only; no provider network calls in local benchmarks.
-- Results are stored in `benchmarks/results/`.
-- Compare equivalent algorithms across stacks; do not claim general language superiority from a single application.
+Optional opt-in measurement of end-to-end provider latency.
+
+- Dry-run validates the report schema without credentials or network.
+- Live mode requires explicit `--live-provider-benchmark` and `OPENAI_API_KEY`.
+- Records model identifier, region/endpoint, time-to-first-token, total wall time, tokens, tool calls, and success rate.
+- API keys are read from the environment and never stored.
+
+Run dry-run: `cargo run --bin provider_loop`
+Run live: `OPENAI_API_KEY=sk-... cargo run --bin provider_loop -- --live-provider-benchmark`
