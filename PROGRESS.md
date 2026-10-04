@@ -58,7 +58,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 24 | [#24](https://github.com/paramcodes/ben/issues/24) | Complete | [PR #70](https://github.com/paramcodes/ben/pull/70) — merged 2026-10-04 |
 | 25 | [#25](https://github.com/paramcodes/ben/issues/25) | Complete | [PR #71](https://github.com/paramcodes/ben/pull/71) — merged 2026-10-04 |
 | 26 | [#26](https://github.com/paramcodes/ben/issues/26) | Complete | [PR #72](https://github.com/paramcodes/ben/pull/72) — merged 2026-10-04 |
-| 27 | [#27](https://github.com/paramcodes/ben/issues/27) | In progress | [#73](https://github.com/paramcodes/ben/pull/73) |
+| 27 | [#27](https://github.com/paramcodes/ben/issues/27) | Complete | [PR #73](https://github.com/paramcodes/ben/pull/73) — merged 2026-10-04 |
 | 28 | [#28](https://github.com/paramcodes/ben/issues/28) | Open | |
 | 29 | [#29](https://github.com/paramcodes/ben/issues/29) | Open | |
 | 30 | [#30](https://github.com/paramcodes/ben/issues/30) | Open | |
@@ -109,3 +109,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #70](https://github.com/paramcodes/ben/pull/70) | 24 | Merged 2026-10-04 | feat: read bounded workspace files |
 | [PR #71](https://github.com/paramcodes/ben/pull/71) | 25 | Merged 2026-10-04 | feat: assemble bounded repository context |
 | [PR #72](https://github.com/paramcodes/ben/pull/72) | 26 | Merged 2026-10-04 | feat: execute read-only model tools |
+| [PR #73](https://github.com/paramcodes/ben/pull/73) | 27 | Merged 2026-10-04 | feat: bind approvals to exact actions |
