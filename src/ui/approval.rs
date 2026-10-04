@@ -44,7 +44,9 @@ pub fn render(frame: &mut Frame<'_>, area: ratatui::layout::Rect, state: &AppSta
         frame.render_widget(Paragraph::new("No action is pending."), rows[1]);
     }
 
-    let controls = if compact {
+    let controls = if area.width < 35 {
+        Line::from(vec![Span::raw("a/r/c")])
+    } else if compact {
         Line::from(vec![
             control(
                 "a Approve",
@@ -83,14 +85,14 @@ pub fn render(frame: &mut Frame<'_>, area: ratatui::layout::Rect, state: &AppSta
 fn control(label: &'static str, focus: ApprovalFocus, selected: ApprovalFocus) -> Span<'static> {
     if focus == selected {
         Span::styled(
-            label,
+            format!("> {label}"),
             Style::default()
                 .fg(Color::White)
                 .bg(Color::Blue)
                 .add_modifier(Modifier::BOLD),
         )
     } else {
-        Span::raw(label)
+        Span::raw(format!("  {label}"))
     }
 }
 
@@ -188,16 +190,21 @@ fn compact_value(value: &serde_json::Value) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
     use ratatui::{Terminal, backend::TestBackend};
 
     use super::render;
     use crate::{
         app::{
             event::AppEvent,
-            update::{AppState, update},
+            update::{AppState, ApprovalFocus, Screen, update},
         },
-        policy::approval::PendingAction,
+        policy::approval::{ApprovalDecision, PendingAction},
     };
+
+    fn key(code: KeyCode) -> AppEvent {
+        AppEvent::Key(KeyEvent::new(code, KeyModifiers::NONE))
+    }
 
     fn pending_state() -> AppState {
         let action = PendingAction::new(
@@ -252,5 +259,73 @@ mod tests {
         assert!(output.contains("run_command"));
         assert!(output.contains("Cancel"));
         assert!(output.contains("Approve"));
+    }
+
+    #[test]
+    fn focus_marker_visible_without_color() {
+        let output = rendered(80, 24);
+        assert!(
+            output.contains("> [c] Cancel"),
+            "focused choice must have a text marker: {output}"
+        );
+    }
+
+    #[test]
+    fn right_arrow_cycles_focus_through_all_choices() {
+        let mut state = pending_state();
+        assert_eq!(state.approval_focus, ApprovalFocus::Cancel);
+
+        state = update(state, key(KeyCode::Right));
+        assert_eq!(state.approval_focus, ApprovalFocus::ApproveOnce);
+
+        state = update(state, key(KeyCode::Right));
+        assert_eq!(state.approval_focus, ApprovalFocus::Reject);
+
+        state = update(state, key(KeyCode::Right));
+        assert_eq!(state.approval_focus, ApprovalFocus::Cancel);
+    }
+
+    #[test]
+    fn left_arrow_cycles_focus_through_all_choices() {
+        let mut state = pending_state();
+        assert_eq!(state.approval_focus, ApprovalFocus::Cancel);
+
+        state = update(state, key(KeyCode::Left));
+        assert_eq!(state.approval_focus, ApprovalFocus::Reject);
+
+        state = update(state, key(KeyCode::Left));
+        assert_eq!(state.approval_focus, ApprovalFocus::ApproveOnce);
+    }
+
+    #[test]
+    fn enter_confirms_focused_approval() {
+        let mut state = pending_state();
+        state.approval_focus = ApprovalFocus::ApproveOnce;
+
+        let state = update(state, AppEvent::Submit);
+        assert!(
+            state
+                .approval
+                .resolution()
+                .as_ref()
+                .is_some_and(|r| r.decision == ApprovalDecision::ApproveOnce),
+            "focused approval must be recorded"
+        );
+    }
+
+    #[test]
+    fn escape_records_cancel_and_returns_to_conversation() {
+        let state = pending_state();
+        let state = update(state, AppEvent::Cancel);
+
+        assert_eq!(state.screen, Screen::Conversation);
+        assert!(
+            state
+                .approval
+                .resolution()
+                .as_ref()
+                .is_some_and(|r| r.decision == ApprovalDecision::Cancel),
+            "Esc must record a Cancel resolution"
+        );
     }
 }

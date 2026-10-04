@@ -67,7 +67,9 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 33 | [#33](https://github.com/paramcodes/ben/issues/33) | Complete | [PR #79](https://github.com/paramcodes/ben/pull/79) — merged 2026-10-04 |
 | 34 | [#34](https://github.com/paramcodes/ben/issues/34) | Complete | [PR #80](https://github.com/paramcodes/ben/pull/80) — merged 2026-10-04 |
 | 35 | [#35](https://github.com/paramcodes/ben/issues/35) | Complete | [PR #81](https://github.com/paramcodes/ben/pull/81) — merged 2026-10-04 |
-| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Open | |
+| 36 | [#36](https://github.com/paramcodes/ben/issues/36) | In progress | Branch `task/36-shutdown-consistency` — fix: make shutdown cleanup reliable; 11 tests passing |
+| 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Complete | Merged PR #83: feat summarize agent work and errors |
+| 38 | [#38](https://github.com/paramcodes/ben/issues/38) | In progress | Branch `task/36-shutdown-consistency` — feat: improve terminal accessibility; 10 new tests passing |
 | 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Open | |
 | 38 | [#38](https://github.com/paramcodes/ben/issues/38) | Open | |
 | 39 | [#39](https://github.com/paramcodes/ben/issues/39) | Open | |

@@ -49,7 +49,9 @@ pub fn render(frame: &mut Frame<'_>, state: &AppState) {
     conversation::render_transcript(frame, chunks[1], state);
     conversation::render_prompt(frame, chunks[2], state);
 
-    let help = if compact {
+    let help = if area.width < 40 {
+        "Enter send"
+    } else if compact {
         "Enter send · Ctrl+C quit"
     } else {
         "Enter: send    Ctrl+C: quit"
@@ -119,6 +121,19 @@ mod tests {
 
         assert!(rendered.contains("Agent: first line"));
         assert!(rendered.contains("second line"));
+    }
+
+    #[test]
+    fn minimum_width_shows_compact_help() {
+        let rendered = render_state(30, 10, &AppState::default());
+        assert!(
+            rendered.contains("Enter send"),
+            "narrow terminal must show minimal help: {rendered}"
+        );
+        assert!(
+            !rendered.contains("Ctrl+C"),
+            "narrow help omits verbose shortcuts: {rendered}"
+        );
     }
 
     #[test]

@@ -1,4 +1,5 @@
 pub mod event;
+pub mod shutdown;
 pub mod terminal;
 pub mod update;
 
