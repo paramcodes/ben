@@ -22,7 +22,7 @@ A ticket is **Complete** only when its pull request is merged. Record the merged
 | 3 — Streaming and agent loop | 14–20 | Complete |
 | 4 — Workspace context and read-only tools | 21–26 | Complete |
 | 5 — Approval and side-effecting tools | 27–32 | Complete |
-| 6 — Sessions and robust recovery | 33–36 | Not started |
+| 6 — Sessions and robust recovery | 33–36 | In progress |
 | 7 — Product usability and release | 37–40 | Not started |
 | 8 — Performance evidence and stack comparison | 41–46 | Not started |
 
