@@ -10,7 +10,7 @@ use std::{
 
 use crate::{
     config::Config,
-    sessions::model::{SessionError, SessionRecord},
+    sessions::model::{SessionError, SessionRecord, now_ms},
 };
 
 const SESSIONS_DIR: &str = "sessions";
@@ -19,6 +19,7 @@ const MAX_ID_LENGTH: usize = 128;
 const MAX_TEMP_ATTEMPTS: u64 = 100;
 
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+static ID_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, thiserror::Error)]
 pub enum SessionStoreError {
@@ -64,6 +65,14 @@ impl SessionStore {
 
     pub fn root(&self) -> &Path {
         &self.root
+    }
+    /// A fresh, unique session id that is always a safe file name.
+    pub fn new_id(&self) -> String {
+        let sequence = ID_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        match now_ms() {
+            Some(stamp) => format!("ben-{stamp}-{sequence}"),
+            None => format!("ben-{sequence}"),
+        }
     }
 
     /// Resolves a session file, refusing ids that could escape the directory.
@@ -291,7 +300,7 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::{SessionStore, SessionStoreError};
+    use super::{SessionStore, SessionStoreError, is_safe_id};
     use crate::{
         config::Config,
         sessions::model::{SCHEMA_VERSION, SessionError, SessionMessage, SessionRecord},
@@ -574,5 +583,35 @@ mod tests {
             );
         }
         assert!(!dir.path().join("escape.json").exists());
+    }
+    #[test]
+    fn generated_ids_are_unique_and_safe_file_names() {
+        let store = SessionStore::new("irrelevant-root");
+
+        let ids: Vec<String> = (0..128).map(|_| store.new_id()).collect();
+
+        assert_eq!(
+            ids.len(),
+            ids.iter().collect::<std::collections::HashSet<_>>().len(),
+            "generated ids must never collide"
+        );
+        for id in &ids {
+            assert!(
+                is_safe_id(id),
+                "generated id {id:?} must be usable as a session file name"
+            );
+        }
+    }
+
+    #[test]
+    fn a_generated_id_round_trips_through_save_and_load() {
+        let dir = tempdir().unwrap();
+        let store = SessionStore::new(dir.path());
+        let id = store.new_id();
+
+        store.save(&record(&id)).unwrap();
+
+        assert_eq!(store.load(&id).unwrap().id, id);
+        assert_eq!(store.list_ids().unwrap(), [id.as_str()]);
     }
 }

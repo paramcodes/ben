@@ -123,23 +123,30 @@ pub struct TerminalGuard<T: TerminalControl> {
 }
 
 impl<T: TerminalControl> TerminalGuard<T> {
-    fn new(control: T) -> Self {
+    pub fn new(control: T) -> Self {
         Self {
             control,
             armed: true,
         }
     }
 
-    fn enter(&mut self) -> io::Result<()> {
+    pub fn enter(&mut self) -> io::Result<()> {
         self.control.enter()
     }
 
-    fn restore(&mut self) -> io::Result<()> {
+    /// Restores the terminal state exactly once. A failed restoration keeps
+    /// the guard armed so `Drop` can still retry it.
+    pub fn restore(&mut self) -> io::Result<()> {
         if !self.armed {
             return Ok(());
         }
-        self.armed = false;
-        self.control.restore()
+        match self.control.restore() {
+            Ok(()) => {
+                self.armed = false;
+                Ok(())
+            }
+            Err(error) => Err(error),
+        }
     }
 }
 
