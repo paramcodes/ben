@@ -60,7 +60,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 26 | [#26](https://github.com/paramcodes/ben/issues/26) | Complete | [PR #72](https://github.com/paramcodes/ben/pull/72) — merged 2026-10-04 |
 | 27 | [#27](https://github.com/paramcodes/ben/issues/27) | Complete | [PR #73](https://github.com/paramcodes/ben/pull/73) — merged 2026-10-04 |
 | 28 | [#28](https://github.com/paramcodes/ben/issues/28) | Complete | [PR #74](https://github.com/paramcodes/ben/pull/74) — merged 2026-10-04 |
-| 29 | [#29](https://github.com/paramcodes/ben/issues/29) | In progress | [#75](https://github.com/paramcodes/ben/pull/75) |
+| 29 | [#29](https://github.com/paramcodes/ben/issues/29) | Complete | [PR #75](https://github.com/paramcodes/ben/pull/75) — merged 2026-10-04 |
 | 30 | [#30](https://github.com/paramcodes/ben/issues/30) | Open | |
 | 31 | [#31](https://github.com/paramcodes/ben/issues/31) | Open | |
 | 32 | [#32](https://github.com/paramcodes/ben/issues/32) | Open | |
@@ -111,3 +111,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #72](https://github.com/paramcodes/ben/pull/72) | 26 | Merged 2026-10-04 | feat: execute read-only model tools |
 | [PR #73](https://github.com/paramcodes/ben/pull/73) | 27 | Merged 2026-10-04 | feat: bind approvals to exact actions |
 | [PR #74](https://github.com/paramcodes/ben/pull/74) | 28 | Merged 2026-10-04 | Task 28: Review tool actions in the TUI |
+| [PR #75](https://github.com/paramcodes/ben/pull/75) | 29 | Merged 2026-10-04 | Task 29: Implement proposed edit and diff rendering |
