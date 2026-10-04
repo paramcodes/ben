@@ -52,7 +52,7 @@ def main() -> int:
         return 1
 
     text = PROGRESS.read_text(encoding="utf-8")
-    pattern = re.compile(rf"^\| {args.task} \| (.*?) \| (Open|In progress|Complete) \| (.*?) \|$", re.M)
+    pattern = re.compile(rf"^\| {args.task} \| (.*?) \| (Open|In progress|Complete) \| (.*?)\s*\|$", re.M)
     replacement = f"| {args.task} | [#{issue_number}](https://github.com/{REPO}/issues/{issue_number}) | {status} | {evidence} |"
     text, count = pattern.subn(replacement, text)
     if count != 1:

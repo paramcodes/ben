@@ -65,7 +65,7 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | 31 | [#31](https://github.com/paramcodes/ben/issues/31) | Complete | [PR #77](https://github.com/paramcodes/ben/pull/77) — merged 2026-10-04 |
 | 32 | [#32](https://github.com/paramcodes/ben/issues/32) | Complete | [PR #78](https://github.com/paramcodes/ben/pull/78) — merged 2026-10-04 |
 | 33 | [#33](https://github.com/paramcodes/ben/issues/33) | Complete | [PR #79](https://github.com/paramcodes/ben/pull/79) — merged 2026-10-04 |
-| 34 | [#34](https://github.com/paramcodes/ben/issues/34) | In progress | |
+| 34 | [#34](https://github.com/paramcodes/ben/issues/34) | Complete | [PR #80](https://github.com/paramcodes/ben/pull/80) — merged 2026-10-04 |
 | 35 | [#35](https://github.com/paramcodes/ben/issues/35) | Open | |
 | 36 | [#36](https://github.com/paramcodes/ben/issues/36) | Open | |
 | 37 | [#37](https://github.com/paramcodes/ben/issues/37) | Open | |
@@ -116,3 +116,4 @@ Status values: **Open**, **In progress**, **Complete**. Keep issue and PR links 
 | [PR #77](https://github.com/paramcodes/ben/pull/77) | 31 | Merged 2026-10-04 | [Task 31] Implement bounded command execution |
 | [PR #78](https://github.com/paramcodes/ben/pull/78) | 32 | Merged 2026-10-04 | feat: gate side effects on user approval |
 | [PR #79](https://github.com/paramcodes/ben/pull/79) | 33 | Merged 2026-10-04 | feat: define versioned session format |
+| [PR #80](https://github.com/paramcodes/ben/pull/80) | 34 | Merged 2026-10-04 | Task 34: Persist and recover sessions |
